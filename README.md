@@ -24,7 +24,7 @@ x3, H = gconv_layer(x2, H)                                                      
 y = pool_h(x3)                                                                      # 15
 ```
 
-In line 5 we create a random minibatch of three-channel $R^3$ volumes and in line 6 and we create a uniformkv grid consisting of 12 $\text{SO}(3)$ elements to which we want to lift the volumes. In line 13 the input defined on $R^3$ is lifted to $R^3 \rtimes \text{SO}(3) = \text{SE}(3)$. In line 14 an $\text{SE}(3)$ convolution is performed. In line 15 the $\text{SE}(3)$ activations are reduced back to $R^3$.
+In line 5 we create a random batch of three-channel $R^3$ volumes and in line 6 and we create a uniform grid consisting of 12 $\text{SO}(3)$ elements to which we want to lift the volumes. In line 13 the input defined on $R^3$ is lifted to $R^3 \rtimes \text{SO}(3) = \text{SE}(3)$. In line 14 an $\text{SE}(3)$ convolution is performed. In line 15 the $\text{SE}(3)$ activations are reduced back to $R^3$.
 
 ## Requirements:
 ```
