@@ -779,3 +779,253 @@ def uniform_grid_s2(
     grid = to_so3_fn(grid) if add_alpha else grid
 
     return param_fn(grid)
+
+
+######################################
+# Groups
+######################################
+
+
+def identity(device: Optional[str] = None) -> Tensor:
+    """
+    Creates SO3 identity element as quaternion.
+
+    Arguments:
+        - device: Device on which group is created.
+
+    Returns:
+       - Tensor containing group elements.
+    """
+    return torch.Tensor([[1.0, 0.0, 0.0, 0.0]], device=device)
+
+
+def klein_group(device: Optional[str] = None) -> Tensor:
+    """
+    Returns Klein group as quaternions.
+
+    Arguments:
+        - device: Device on which group is created.
+
+    Returns:
+        - Tensor containing group elements.
+    """
+    return torch.Tensor(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+        ],
+        device=device,
+    )
+
+
+def tetrahedral(device: Optional[str] = None) -> Tensor:
+    """
+    Returns tetrahedral group as quaternions.
+
+    Arguments:
+        - device: Device on which group is created.
+
+    Returns:
+        - Tensor containing group elements.
+    """
+    return torch.Tensor(
+        [
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.5, 0.5, -0.5, -0.5],
+            [0.5, 0.5, -0.5, 0.5],
+            [0.5, 0.5, 0.5, -0.5],
+            [0.5, 0.5, 0.5, 0.5],
+            [-0.5, 0.5, -0.5, -0.5],
+            [-0.5, 0.5, -0.5, 0.5],
+            [-0.5, 0.5, 0.5, -0.5],
+            [-0.5, 0.5, 0.5, 0.5],
+        ],
+        device=device,
+    )
+
+
+def octahedral(device: Optional[str] = None) -> Tensor:
+    """
+    Returns octahedral group as quaternions.
+
+    Arguments:
+        - device: Device on which group is created.
+
+    Returns:
+        - Tensor containing group elements.
+    """
+    return torch.Tensor(
+        [
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.5, 0.5, -0.5, -0.5],
+            [0.5, 0.5, -0.5, 0.5],
+            [0.5, 0.5, 0.5, -0.5],
+            [0.5, 0.5, 0.5, 0.5],
+            [-0.5, 0.5, -0.5, -0.5],
+            [-0.5, 0.5, -0.5, 0.5],
+            [-0.5, 0.5, 0.5, -0.5],
+            [-0.5, 0.5, 0.5, 0.5],
+            [0.70710678, 0.70710678, 0.0, 0.0],
+            [0.70710678, 0.0, 0.70710678, 0.0],
+            [0.70710678, 0.0, 0.0, 0.70710678],
+            [0.70710678, 0.0, 0.0, -0.70710678],
+            [0.70710678, 0.0, -0.70710678, 0.0],
+            [0.70710678, -0.70710678, 0.0, 0.0],
+            [0.0, 0.0, 0.70710678, 0.70710678],
+            [0.0, 0.0, -0.70710678, 0.70710678],
+            [0.0, 0.70710678, 0.0, 0.70710678],
+            [0.0, -0.70710678, 0.0, 0.70710678],
+            [0.0, 0.70710678, 0.70710678, 0.0],
+            [0.0, -0.70710678, 0.70710678, 0.0],
+        ],
+        device=device,
+    )
+
+
+def icosahedral(device: Optional[str] = None) -> Tensor:
+    """
+    Returns icosahedral group as quaternions.
+
+    Arguments:
+        - device: Device on which group is created.
+
+    Returns:
+        - Tensor containing group elements.
+    """
+    return torch.Tensor(
+        [
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.5, 0.5, -0.5, -0.5],
+            [0.5, 0.5, -0.5, 0.5],
+            [0.5, 0.5, 0.5, -0.5],
+            [0.5, 0.5, 0.5, 0.5],
+            [-0.5, 0.5, -0.5, -0.5],
+            [-0.5, 0.5, -0.5, 0.5],
+            [-0.5, 0.5, 0.5, -0.5],
+            [-0.5, 0.5, 0.5, 0.5],
+            [0.0, 0.5, 0.30901699, 0.80901699],
+            [0.0, 0.5, 0.30901699, -0.80901699],
+            [0.30901699, 0.5, 0.80901699, 0.0],
+            [-0.30901699, 0.5, 0.80901699, 0.0],
+            [0.0, 0.5, -0.30901699, 0.80901699],
+            [0.0, 0.5, -0.30901699, -0.80901699],
+            [0.30901699, 0.5, -0.80901699, 0.0],
+            [-0.30901699, 0.5, -0.80901699, 0.0],
+            [0.80901699, 0.5, 0.0, 0.30901699],
+            [-0.80901699, 0.5, 0.0, 0.30901699],
+            [0.80901699, 0.5, 0.0, -0.30901699],
+            [-0.80901699, 0.5, 0.0, -0.30901699],
+            [0.80901699, 0.30901699, 0.5, 0.0],
+            [-0.80901699, 0.30901699, 0.5, 0.0],
+            [0.0, 0.30901699, 0.80901699, 0.5],
+            [0.0, 0.30901699, 0.80901699, -0.5],
+            [0.80901699, 0.30901699, -0.5, 0.0],
+            [-0.80901699, 0.30901699, -0.5, 0.0],
+            [0.0, 0.30901699, -0.80901699, 0.5],
+            [0.0, 0.30901699, -0.80901699, -0.5],
+            [0.5, 0.30901699, 0.0, 0.80901699],
+            [-0.5, 0.30901699, 0.0, 0.80901699],
+            [0.5, 0.30901699, 0.0, -0.80901699],
+            [-0.5, 0.30901699, 0.0, -0.80901699],
+            [0.0, 0.80901699, 0.5, 0.30901699],
+            [0.0, 0.80901699, 0.5, -0.30901699],
+            [0.5, 0.80901699, 0.30901699, 0.0],
+            [-0.5, 0.80901699, 0.30901699, 0.0],
+            [0.0, 0.80901699, -0.5, 0.30901699],
+            [0.0, 0.80901699, -0.5, -0.30901699],
+            [0.5, 0.80901699, -0.30901699, 0.0],
+            [-0.5, 0.80901699, -0.30901699, 0.0],
+            [0.30901699, 0.80901699, 0.0, 0.5],
+            [-0.30901699, 0.80901699, 0.0, 0.5],
+            [0.30901699, 0.80901699, 0.0, -0.5],
+            [-0.30901699, 0.80901699, 0.0, -0.5],
+            [0.30901699, 0.0, 0.5, 0.80901699],
+            [-0.30901699, 0.0, 0.5, 0.80901699],
+            [0.30901699, 0.0, 0.5, -0.80901699],
+            [-0.30901699, 0.0, 0.5, -0.80901699],
+            [0.80901699, 0.0, 0.30901699, 0.5],
+            [-0.80901699, 0.0, 0.30901699, 0.5],
+            [0.80901699, 0.0, 0.30901699, -0.5],
+            [-0.80901699, 0.0, 0.30901699, -0.5],
+            [0.5, 0.0, 0.80901699, 0.30901699],
+            [-0.5, 0.0, 0.80901699, 0.30901699],
+            [0.5, 0.0, 0.80901699, -0.30901699],
+            [-0.5, 0.0, 0.80901699, -0.30901699],
+        ],
+        device=device,
+    )
+
+
+def cyclic_x(n: int, device: Optional[str] = None) -> Tensor:
+    """
+    Returns cyclic group as quaternions consisting of
+    `n` elements for rotation around the x-axis.
+
+    Arguments:
+        - n: Number of elements in group.
+
+    Returns:
+        - Tensor of shape (n, 4).
+    """
+    return matrix_to_quat(matrix_x(torch.linspace(0, 2 * pi, n + 1)[:-1]))
+
+
+def cyclic_y(n: int, device: Optional[str] = None) -> Tensor:
+    """
+    Returns cyclic group as quaternions consisting of
+    `n` elements for rotation around the y-axis.
+
+    Arguments:
+        - n: Number of elements in group.
+
+    Returns:
+        - Tensor of shape (n, 4).
+    """
+    return matrix_to_quat(matrix_y(torch.linspace(0, 2 * pi, n + 1)[:-1]))
+
+
+def cyclic_z(n: int, device: Optional[str] = None) -> Tensor:
+    """
+    Returns cyclic group as quaternions consisting of
+    `n` elements for rotation around the z-axis.
+
+    Arguments:
+        - n: Number of elements in group.
+
+    Returns:
+        - Tensor of shape (n, 4).
+    """
+    return matrix_to_quat(matrix_z(torch.linspace(0, 2 * pi, n + 1)[:-1]))
+
+
+def cyclic(n: int, axis: str, device: Optional[str] = None) -> Tensor:
+    """
+    Returns cyclic group as quaternions consisting of
+    `n` elements for rotation around given axis.
+
+    Arguments:
+        - n: Number of elements in group.
+        - axis: str denoting the axis of rotation. Supported axes
+              are `x`, `y`, `z`.
+
+    Returns:
+        - Tensor of shape (n, 4).
+    """
+    if axis.lower() == "x":
+        return cyclic_x(n, device=device)
+    if axis.lower() == "y":
+        return cyclic_y(n, device=device)
+    if axis.lower() == "z":
+        return cyclic_z(n, device=device)
+    raise ValueError(f"axis should be either 'x', 'y', 'z', 'X', 'Y', or 'Z'.")
