@@ -20,11 +20,12 @@ class _GKernel(nn.Module):
         each element in X.
 
         Arguments:
-            - H: Tensor of group elements.
-            - X: Tensor of group elements.
+            - H: Tensor of group elements of shape `(N, ...)`.
+            - X: Tensor of group elements of shape `(M, ...)`.
 
         Returns:
-            - Tensor containing inverse group actions of H on X.
+            - Tensor containing inverse group actions of H on X
+              of shape `(N, M, ...)`.
         """
         raise NotImplementedError
 
@@ -32,13 +33,13 @@ class _GKernel(nn.Module):
         self, H: Tensor, grid: Tensor, weight: Tensor, **kwargs: dict[Any]
     ) -> Tensor:
         """
-        Returns interpolated signal corresponding to group elements in H based
+        Returns sampled weights corresponding to group elements in H based
         on reference interpolation grid and weight defined on the reference grid.
 
         Arguments:
-            - H: Tensor of group elements.
-            - interpolation_grid: interpolation grid of group elements.
-            - weight: Signal defined on reference grid.
+            - H: Tensor of group elements of shape `(N, ...)`.
+            - grid: interpolation grid of group elements of shape `(M, ...)`.
+            - weight: Weight tensor defined on `grid` of shape `(Cin, Cout, M, *kernel_size)`.
 
         Returns:
             - Tensor containing interpolated weight.
@@ -101,8 +102,8 @@ class _GKernel(nn.Module):
         weight.
 
         Arguments:
-            - H: Tensor of group elements.
-            - X: Tensor of group elements.
+            - H: Tensor of group elements of shape `(N, ...)`.
+            - X: Tensor of group elements of shape `(M, ...)`.
 
         Returns:
             - weight corresponding to transformed X.
