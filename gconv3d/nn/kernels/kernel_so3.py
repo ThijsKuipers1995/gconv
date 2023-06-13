@@ -1,3 +1,8 @@
+"""
+kernel_so3.py
+
+Implements a kernel for SO3 convolutions.
+"""
 from __future__ import annotations
 from typing import Optional
 
