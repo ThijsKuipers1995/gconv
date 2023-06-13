@@ -1,10 +1,10 @@
 import torch
 from torch import Tensor
 
-from gconv.geometry import rotation as R
-from gconv.geometry import interpolation
+from gconv3d.geometry import rotation as R
+from gconv3d.geometry import interpolation
 
-import gconv.nn.functional._grid_cache as grid_cache
+import gconv3d.nn.functional._grid_cache as grid_cache
 
 import torch.nn.functional as F
 
@@ -85,21 +85,14 @@ def grid_sample(
     signal: Tensor, grid: Tensor, mode: str = "bilinear", padding_mode="border"
 ) -> Tensor:
     """
-    Samples R2 or R3 signal on provided signal for given grid.
-
-    Arguments:
-        - signal: Tensor of shape `(N, C, W, H)` or `(N, C, D, W, H)` containing 2D or 3D signal.
-        - grid: Tensor of shape `(G, W, H, 2)` or `(G, D, W, H, 3)` of `G` grids to interpolate.
-                This grid is a flowfield, defined from -1 to 1 (see PyTorch nn.functional.grid_sample documentation).
-        - mode: Interpolation mode.
-        - padding_mode: Padding mode used for values outside grid boundary
+    TODO: arguments (see F.grid_sample)
 
     Returns:
         Tensor of shape `(N, G, C, W, H)` or `(N, G, C, D, W, H)`.
     """
     return F.grid_sample(
-        signal.repeat_interleave(grid.shape[0], dim=0),
-        grid.repeat(signal.shape[0], *((grid.shape[-1] + 1) * (1,))),
+        signal,
+        grid,
         mode=mode,
         padding_mode=padding_mode,
     ).view(signal.shape[0], grid.shape[0], signal.shape[1], *signal.shape[2:])
