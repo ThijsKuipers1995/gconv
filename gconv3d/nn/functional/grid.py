@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 
-from gconv.geometry import so3
+from gconv.geometry import rotation as R
 from gconv.geometry import interpolation
 
 import gconv.nn.functional._grid_cache as grid_cache
@@ -38,7 +38,7 @@ def _create_uniform_grid(
     try:
         return grid_cache.load_grid(size, grid_type, parameterization)
     except KeyError:
-        grid = so3.uniform_grid(
+        grid = R.uniform_grid(
             size, steps=steps, device=device, parameterization=parameterization
         )
 
@@ -57,15 +57,15 @@ def create_grid_SO3(
     cache_grid: bool = True,
 ) -> Tensor:
     if type.lower() == "eye":
-        grid = so3.identity(device)
+        grid = R.identity(device)
     if type.lower() == "k" or type.lower() == "klein":
-        grid = so3.klein_group(device)
+        grid = R.klein_group(device)
     if type.lower() == "t" or type.lower() == "tetrahedral":
-        grid = so3.tetrahedral(device)
+        grid = R.tetrahedral(device)
     if type.lower() == "o" or type.lower() == "octahedral":
-        grid = so3.octahedral(device)
+        grid = R.octahedral(device)
     if type.lower() == "i" or type.lower() == "icosahedral":
-        grid = so3.icosahedral(device)
+        grid = R.icosahedral(device)
     if type.lower() == "u":
         return _create_uniform_grid(
             size,
@@ -76,9 +76,9 @@ def create_grid_SO3(
             cache_grid=cache_grid,
         )
     if type.lower() == "r":
-        grid = so3.random_quat(size, device)
+        grid = R.random_quat(size, device)
 
-    return grid if parameterization.lower() == "quat" else so3.quat_to_matrix(grid)
+    return grid if parameterization.lower() == "quat" else R.quat_to_matrix(grid)
 
 
 def grid_sample(
@@ -89,10 +89,13 @@ def grid_sample(
 
     Arguments:
         - signal: Tensor of shape `(N, C, W, H)` or `(N, C, D, W, H)` containing 2D or 3D signal.
-        - grid: Tensor of shape `(G, W, H, 2)` or `(G, D, W, H, 3)` of `D` grids to interpolate.
+        - grid: Tensor of shape `(G, W, H, 2)` or `(G, D, W, H, 3)` of `G` grids to interpolate.
                 This grid is a flowfield, defined from -1 to 1 (see PyTorch nn.functional.grid_sample documentation).
         - mode: Interpolation mode.
         - padding_mode: Padding mode used for values outside grid boundary
+
+    Returns:
+        Tensor of shape `(N, G, C, W, H)` or `(N, G, C, D, W, H)`.
     """
     return F.grid_sample(
         signal.repeat_interleave(grid.shape[0], dim=0),
@@ -103,35 +106,44 @@ def grid_sample(
 
 
 def so3_sample(
-    signal: Tensor,
-    reference_grid: Tensor,
     grid: Tensor,
+    signal: Tensor,
+    signal_grid: Tensor,
     mode: str = "rbf",
-    width: float = 0.1,
+    width: float = 0.5,
 ) -> Tensor:
     """
-    Samples SO3 signal on provided signal and corresponding SO3 reference grid
-    for the given grid of SO3 elements.
+    Samples SO3 signal on provided signal and corresponding SO3 signal grid
+    for the given grid of SO3 elements. Supports both matrix and euler
+    parameterizations.
 
     Arguments:
-        - signal: SO3 signal to interpolate of shape `(N, H1, 4)`.
-        - reference_grid: Reference grid corresponding to signal of shape `(N, H, 4)`.
-        - grid: Grid of SO3 elements to sample of shape `(N, H2, 4)`.
+        - signal: SO3 signal to interpolate of shape `(H1, S)`.
+        - signal_grid: signal grid corresponding to signal of shape `(H1, 4)`.
+        - grid: Grid of SO3 elements to sample of shape `(H2, 4)`.
         - width: Width used for RBF interpolation kernel.
 
     Returns:
-        - Tensor of shape (N, H2, S) containing sampled signal.
+        - Tensor of shape (H2, S) containing sampled signal.
     """
+    # If input are matrices, convert to quats
+    if grid.ndim == 3:
+        grid = R.matrix_to_quat(grid)
+        signal_grid = R.matrix_to_quat(signal_grid)
+
     if mode == "nearest":
         return interpolation.interpolate_NN(
-            grid, reference_grid, signal, dist_fn=so3.geodesic_distance
-        )
-    if mode == "bcc":
-        return interpolation.interpolate_BCC(
-            grid, reference_grid, signal, dist_fn=so3.geodesic_distance
-        )
+            grid[None],
+            signal_grid[None],
+            signal[None],
+            dist_fn=R.geodesic_distance,
+        ).squeeze(0)
     if mode == "rbf":
         return interpolation.interpolate_RBF(
-            grid, reference_grid, signal, dist_fn=so3.geodesic_distance, width=width
-        )
+            grid[None],
+            signal_grid[None],
+            signal[None],
+            dist_fn=R.geodesic_distance,
+            width=width,
+        ).squeeze(0)
     raise ValueError(f"unknown interpolation mode `{mode=}`.")

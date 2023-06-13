@@ -4,7 +4,7 @@ from .grid import create_grid_R3
 from torch import Tensor
 
 
-def _create_spherical_mask(size: int, device: str = None) -> Tensor:
+def create_spherical_mask(size: int, device: str = None) -> Tensor:
     """
     Creates spherical mask of size (size, size, size).
 
