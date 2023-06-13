@@ -53,29 +53,31 @@ def create_grid_SO3(
     size: int = 1,
     parameterization: str = "quat",
     device: str = None,
-    steps: int = 500,
+    steps: int = 1000,
     cache_grid: bool = True,
 ) -> Tensor:
-    if type.lower() == "eye":
+    type = type.lower()
+
+    if type == "eye":
         grid = R.identity(device)
-    if type.lower() == "k" or type.lower() == "klein":
+    if type == "k" or type == "klein":
         grid = R.klein_group(device)
-    if type.lower() == "t" or type.lower() == "tetrahedral":
+    if type == "t" or type == "tetrahedral":
         grid = R.tetrahedral(device)
-    if type.lower() == "o" or type.lower() == "octahedral":
+    if type == "o" or type == "octahedral":
         grid = R.octahedral(device)
-    if type.lower() == "i" or type.lower() == "icosahedral":
+    if type == "i" or type == "icosahedral":
         grid = R.icosahedral(device)
-    if type.lower() == "u":
+    if type == "u":
         return _create_uniform_grid(
             size,
             "so3",
-            parameterization,
+            parameterization.lower(),
             steps=steps,
             device=device,
             cache_grid=cache_grid,
         )
-    if type.lower() == "r":
+    if type == "r":
         grid = R.random_quat(size, device)
 
     return grid if parameterization.lower() == "quat" else R.quat_to_matrix(grid)

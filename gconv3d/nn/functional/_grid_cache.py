@@ -1,5 +1,31 @@
 from torch import Tensor
 
+
+def save_grid(
+    grid: Tensor, grid_type: str, parameterization: str, overwrite: bool = False
+) -> None:
+    """
+    Saves a grid to the cache.
+
+    Arguments:
+        - grid: Tensor containing the grid.
+        - type: Grid type, e.g., SO3.
+        - parameterization: Parameterization, e.g., "quat".
+    """
+    if overwrite:
+        try:
+            load_grid(grid.shape[0], grid_type, parameterization)
+        except KeyError:
+            pass
+        else:
+            return
+    _grid_cache[grid_type.lower()][parameterization.lower()][grid.shape[0]] = grid
+
+
+def load_grid(size: str, grid_type: str, parameterization: str) -> Tensor:
+    return _grid_cache[grid_type.lower()][parameterization.lower()][size]
+
+
 _grid_cache: dict[str, dict[str, dict[int, Tensor]]] = {
     "so3": {
         "quat": {
