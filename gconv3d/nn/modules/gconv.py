@@ -163,7 +163,8 @@ class GLiftingConvNd(GroupConvNd):
             self.groups,
         ).view(N, self.out_channels, num_out_H, *input.shape[2:])
 
-        input = input if self.bias is None else input + self.bias
+        if self.bias is not None:
+            input = input + self.bias
 
         return input, H
 
@@ -207,7 +208,8 @@ class GSeparableConvNd(GroupConvNd):
             N, self.out_channels, num_out_H, *input.shape[2:]
         )
 
-        input = input if self.bias is None else input + self.bias
+        if self.bias is not None:
+            input = input + self.bias
 
         return input, out_H
 
@@ -245,7 +247,8 @@ class GConvNd(GroupConvNd):
             self.groups,
         ).view(N, self.out_channels, num_out_H, input.shape[2:])
 
-        input = input if self.bias is None else input + self.bias
+        if self.bias is not None:
+            input = input + self.bias
 
         return input, out_H
 
