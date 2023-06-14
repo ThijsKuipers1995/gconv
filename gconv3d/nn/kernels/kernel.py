@@ -95,6 +95,9 @@ class GLiftingKernel(GroupKernel):
             torch.empty(out_channels, in_channels // groups, *self.kernel_size)
         )
 
+        # for expanding determinant to correct size
+        self.weight_dims = (1,) * (self.weight.ndim - 2)
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -116,7 +119,9 @@ class GLiftingKernel(GroupKernel):
         )
 
         weight = weight if self.mask is None else self.mask * weight
-        weight = weight if self.det_H is None else self.det_H * weight
+
+        if self.det_H is not None:
+            weight = self.det_H(H).view(-1, *self.weight_dims) * weight
 
         return weight
 
@@ -166,6 +171,9 @@ class GSeparableKernel(GroupKernel):
 
         self.weight = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
 
+        # for expanding determinant to correct size
+        self.weight_dims = (1,) * (self.weight.ndim - 2)
+
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -214,7 +222,9 @@ class GSeparableKernel(GroupKernel):
         )
 
         weight = weight if self.mask is None else self.mask * weight
-        # weight = weight if self.det_H is None else self.det_H * weight
+
+        if self.det_H is not None:
+            weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
 
         return weight_H, weight
 
@@ -334,6 +344,10 @@ class GKernel(GroupKernel):
                 *kernel_size,
             )
         )
+
+        # for expanding determinant to correct size
+        self.weight_dims = (1,) * (self.weight.ndim - 2)
+
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -379,6 +393,8 @@ class GKernel(GroupKernel):
         )
 
         weight = weight if self.mask is None else self.mask * weight
-        # weight = weight if self.det_H is None else self.det_H * weight
+
+        if self.det_H is not None:
+            weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
 
         return weight
