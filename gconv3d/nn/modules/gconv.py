@@ -149,13 +149,14 @@ class GLiftingConvNd(GroupConvNd):
         N = input.shape[0]
         num_out_H = H.shape[0]
 
-        weight = self.kernel(H).reshape(
-            -1, self.in_channels // self.groups, *self.kernel_size
-        )
+        weight = self.kernel(H)
 
-        input = self._conv_forward(input, weight, num_out_H, self.groups).view(
-            N, self.out_channels, num_out_H, *input.shape[2:]
-        )
+        input = self._conv_forward(
+            input,
+            weight.reshape(-1, self.in_channels // self.groups, *self.kernel_size),
+            num_out_H,
+            self.groups,
+        ).view(N, self.out_channels, num_out_H, *input.shape[2:])
 
         input = input if self.bias is None else input + self.bias
 
