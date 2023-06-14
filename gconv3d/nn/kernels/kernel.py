@@ -214,7 +214,7 @@ class GSeparableKernel(GroupKernel):
         )
 
         weight = weight if self.mask is None else self.mask * weight
-        weight = weight if self.det_H is None else self.det_H * weight
+        # weight = weight if self.det_H is None else self.det_H * weight
 
         return weight_H, weight
 
@@ -379,6 +379,6 @@ class GKernel(GroupKernel):
         )
 
         weight = weight if self.mask is None else self.mask * weight
-        weight = weight if self.det_H is None else self.det_H * weight
+        # weight = weight if self.det_H is None else self.det_H * weight
 
         return weight
