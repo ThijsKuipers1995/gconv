@@ -78,6 +78,8 @@ class GroupKernel(nn.Module):
 
 
 class GLiftingKernel(GroupKernel):
+    __constants__ = ["grid_Rn"]
+
     def __init__(
         self,
         in_channels,
@@ -145,6 +147,8 @@ class GLiftingKernel(GroupKernel):
 
 
 class GSeparableKernel(GroupKernel):
+    __constants__ = ["grid_H", "grid_Rn"]
+
     def __init__(
         self,
         in_channels: int,
@@ -249,6 +253,8 @@ class GSeparableKernel(GroupKernel):
 
 
 class GSubgroupKernel(GroupKernel):
+    __constants__ = ["grid_H"]
+
     def __init__(
         self,
         in_channels: int,
@@ -317,6 +323,8 @@ class GSubgroupKernel(GroupKernel):
 
 
 class GKernel(GroupKernel):
+    __constants__ = ["grid_H", "grid_Rn"]
+
     def __init__(
         self,
         in_channels: int,
