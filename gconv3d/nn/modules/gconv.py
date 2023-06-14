@@ -32,7 +32,7 @@ class GroupConvNd(nn.Module):
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
-        padding_mode: str = "zeros",
+        padding_mode: str = "zeros",  # NOTE: I like it this way
         conv_mode: str = "3d",
         bias: bool = False,
     ) -> None:
@@ -163,36 +163,6 @@ class GLiftingConvNd(GroupConvNd):
         return input, H
 
 
-class GLiftingConv2d(GLiftingConvNd):
-    def __init__(
-        self,
-        kernel: GLiftingKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode="2d", bias=bias
-        )
-
-
-class GLiftingConv3d(GLiftingConvNd):
-    def __init__(
-        self,
-        kernel: GLiftingKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode="3d", bias=bias
-        )
-
-
 class GSeparableConvNd(GroupConvNd):
     def __init__(
         self,
@@ -237,32 +207,6 @@ class GSeparableConvNd(GroupConvNd):
         return input, out_H
 
 
-class GSeparableConv2d(GSeparableConvNd):
-    def __init__(
-        self,
-        kernel: GSeparableKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "2d", bias)
-
-
-class GSeparableConv3d(GSeparableConvNd):
-    def __init__(
-        self,
-        kernel: GSeparableKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "3d", bias)
-
-
 class GConvNd(GroupConvNd):
     def __init__(
         self,
@@ -301,6 +245,34 @@ class GConvNd(GroupConvNd):
         return input, out_H
 
 
+class GLiftingConv2d(GLiftingConvNd):
+    def __init__(
+        self,
+        kernel: GLiftingKernel,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(
+            kernel, stride, padding, dilation, padding_mode, conv_mode="2d", bias=bias
+        )
+
+
+class GSeparableConv2d(GSeparableConvNd):
+    def __init__(
+        self,
+        kernel: GSeparableKernel,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(kernel, stride, padding, dilation, padding_mode, "2d", bias)
+
+
 class GConv2d(GConvNd):
     def __init__(
         self,
@@ -312,6 +284,34 @@ class GConv2d(GConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(kernel, stride, padding, dilation, padding_mode, "2d", bias)
+
+
+class GLiftingConv3d(GLiftingConvNd):
+    def __init__(
+        self,
+        kernel: GLiftingKernel,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(
+            kernel, stride, padding, dilation, padding_mode, conv_mode="3d", bias=bias
+        )
+
+
+class GSeparableConv3d(GSeparableConvNd):
+    def __init__(
+        self,
+        kernel: GSeparableKernel,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(kernel, stride, padding, dilation, padding_mode, "3d", bias)
 
 
 class GConv3d(GConvNd):
