@@ -60,15 +60,15 @@ def create_grid_SO3(
 
     if type == "eye":
         grid = R.identity(device)
-    if type == "k" or type == "klein":
+    elif type == "k" or type == "klein":
         grid = R.klein_group(device)
-    if type == "t" or type == "tetrahedral":
+    elif type == "t" or type == "tetrahedral":
         grid = R.tetrahedral(device)
-    if type == "o" or type == "octahedral":
+    elif type == "o" or type == "octahedral":
         grid = R.octahedral(device)
-    if type == "i" or type == "icosahedral":
+    elif type == "i" or type == "icosahedral":
         grid = R.icosahedral(device)
-    if type == "u":
+    elif type == "u" or type == "uniform":
         return _create_uniform_grid(
             size,
             "so3",
@@ -77,8 +77,10 @@ def create_grid_SO3(
             device=device,
             cache_grid=cache_grid,
         )
-    if type == "r":
+    elif type == "r" or type == "random":
         grid = R.random_quat(size, device)
+    else:
+        raise ValueError(f"Unknown type. got {type=}.")
 
     return grid if parameterization.lower() == "quat" else R.quat_to_matrix(grid)
 
@@ -97,7 +99,7 @@ def grid_sample(
         grid,
         mode=mode,
         padding_mode=padding_mode,
-    ).view(signal.shape[0], grid.shape[0], signal.shape[1], *signal.shape[2:])
+    )
 
 
 def so3_sample(
@@ -124,6 +126,8 @@ def so3_sample(
     # If input are matrices, convert to quats
     if grid.ndim == 3:
         grid = R.matrix_to_quat(grid)
+
+    if signal_grid.ndim == 3:
         signal_grid = R.matrix_to_quat(signal_grid)
 
     if mode == "nearest":

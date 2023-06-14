@@ -32,6 +32,8 @@ class GSubgroupKernelSO3(GSubgroupKernel):
             else gF.create_grid_SO3("uniform", size=group_size)
         )
 
+        width = width if width else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
+
         interpolate_H_kwargs = {"mode": mode, "width": width}
 
         super().__init__(
@@ -39,7 +41,6 @@ class GSubgroupKernelSO3(GSubgroupKernel):
             out_channels,
             (1, 1, 1),
             grid_H,
-            None,
             groups,
             inverse_H=R.matrix_inverse,
             left_apply_to_H=R.left_apply_to_matrix,

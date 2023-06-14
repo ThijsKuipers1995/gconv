@@ -54,7 +54,7 @@ class GSeparableKernelSE3(GSeparableKernel):
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_size: int,
+        group_kernel_size: int,
         groups: int = 1,
         group_mode: str = "rbf",
         group_mode_width: float = 0.0,
@@ -66,11 +66,17 @@ class GSeparableKernelSE3(GSeparableKernel):
         grid_H = (
             grid_H
             if grid_H is not None
-            else gF.create_grid_SO3("uniform", size=group_size)
+            else gF.create_grid_SO3("uniform", size=group_kernel_size)
         )
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        interpolate_H_kwargs = {"mode": group_mode, "width": group_mode_width}
+        width = (
+            group_mode_width
+            if group_mode_width
+            else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
+        )
+
+        interpolate_H_kwargs = {"mode": group_mode, "width": width}
         interpolate_Rn_kwargs = {
             "mode": spatial_mode,
             "padding_mode": spatial_padding_mode,
@@ -86,6 +92,7 @@ class GSeparableKernelSE3(GSeparableKernel):
             grid_Rn,
             groups,
             mask=mask,
+            inverse_H=R.matrix_inverse,
             left_apply_to_H=R.left_apply_to_matrix,
             left_apply_to_Rn=R.left_apply_to_R3,
             interpolate_H=gF.so3_sample,
@@ -101,7 +108,7 @@ class GKernelSE3(GKernel):
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_size: int,
+        group_kernel_size: int,
         groups: int = 1,
         group_mode: str = "rbf",
         group_mode_width: float = 0.0,
@@ -113,11 +120,17 @@ class GKernelSE3(GKernel):
         grid_H = (
             grid_H
             if grid_H is not None
-            else gF.create_grid_SO3("uniform", size=group_size)
+            else gF.create_grid_SO3("uniform", size=group_kernel_size)
         )
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        interpolate_H_kwargs = {"mode": group_mode, "width": group_mode_width}
+        width = (
+            group_mode_width
+            if group_mode_width
+            else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
+        )
+
+        interpolate_H_kwargs = {"mode": group_mode, "width": width}
         interpolate_Rn_kwargs = {
             "mode": spatial_mode,
             "padding_mode": spatial_padding_mode,
@@ -133,6 +146,7 @@ class GKernelSE3(GKernel):
             grid_Rn,
             groups,
             mask=mask,
+            inverse_H=R.matrix_inverse,
             left_apply_to_H=R.left_apply_to_matrix,
             left_apply_to_Rn=R.left_apply_to_R3,
             interpolate_H=gF.so3_sample,

@@ -421,7 +421,7 @@ def left_apply_to_R3(R: Tensor, grid: Tensor) -> Tensor:
     return (R[..., None, None, None, :, :] @ grid[..., None]).squeeze(-1)
 
 
-def left_apply_to_matrix(R1: Tensor, R2: Tensor) -> Tensor:
+def left_apply_matrix(R1: Tensor, R2: Tensor) -> Tensor:
     """
     Multiplies each matrix in `R1` to each matrix in `R2`. Regular
     rules of broadcasting applies.
@@ -433,6 +433,20 @@ def left_apply_to_matrix(R1: Tensor, R2: Tensor) -> Tensor:
         - Tensor of multiplied rotation matrices of shape `(..., 3, 3)`.
     """
     return torch.matmul(R1, R2)
+
+
+def left_apply_to_matrix(R1: Tensor, R2: Tensor) -> Tensor:
+    """
+    Multiplies each matrix in `R1` to each matrix in `R2`.
+
+    Arguments:
+        - R1: Tensor of shape `(N, 3, 3)`.
+        - R2: Tensor of shape `(M, 3, 3)`.
+
+    Returns:
+        - Tensor of shape `(N, M, 3, 3)` of rotation matrices.
+    """
+    return torch.matmul(R1[:, None], R2)
 
 
 def so3_log(R: Tensor, eps: float = 1e-7) -> Tensor:
