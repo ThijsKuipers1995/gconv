@@ -18,6 +18,23 @@ import math
 
 
 class GroupKernel(nn.Module):
+    __constants__ = [
+        "in_channels",
+        "out_channels",
+        "kernel_size",
+        "group_kernel_size",
+        "groups",
+        "mask",
+        "det_H",
+        "inverse_H",
+        "left_apply_to_H",
+        "left_apply_to_Rn",
+        "interpolate_H",
+        "interpolate_Rn",
+        "interpolate_H_kwargs",
+        "interpolate_Rn_kwargs",
+    ]
+
     def reset_parameters(self) -> None:
         ...
 

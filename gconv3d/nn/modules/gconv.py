@@ -26,6 +26,8 @@ from torch.nn.modules.utils import _reverse_repeat_tuple, _pair, _triple
 
 
 class GroupConvNd(nn.Module):
+    __constants__ = ["stride", "padding", "dilation", "padding_mode"]
+
     def __init__(
         self,
         kernel: GroupKernel,
@@ -86,6 +88,8 @@ class GroupConvNd(nn.Module):
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, *bias_shape))
+        else:
+            self.register_buffer("bias", None)
 
         self.reset_parameters()
 
