@@ -93,10 +93,11 @@ class GLiftingKernel(_Kernel):
 
     def forward(self, H):
         H_product = self.left_apply_to_Rn(self.inverse_H(H), self._grid_Rn)
+        product_dims = (1,) * (H_product.ndims - 1)
 
         weight = self.interpolate_H(
             self.weight.repeat_interleave(H.shape[0], dim=0),
-            H_product.repeat(self.out_channels, 1, 1, 1, 1),
+            H_product.repeat(self.out_channels, *product_dims),
             **self.interpolate_H_kwargs,
         ).view(
             self.out_channels,
@@ -162,16 +163,19 @@ class GSeparableKernel(_Kernel):
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> tuple[Tensor, Tensor]:
         num_in_H, num_out_H = in_H.shape[0], out_H.shape[0]
+        H_dims = in_H.shape[1:]
 
         out_H_inverse = self.inverse_H(out_H)
 
         H_product_H = self.left_apply_to_H(out_H_inverse, in_H)
         H_product_Rn = self.left_apply_to_Rn(out_H_inverse, self._grid_Rn)
 
+        product_dims = (1,) * (H_product_H.ndims - 1)
+
         # interpolate SO3
         weight_H = (
             self.interpolate_H(
-                H_product_H.view(-1, 3, 3),
+                H_product_H.view(-1, *H_dims),
                 self.weight.transpose(0, 2).reshape(1, self.num_H, -1),
                 **self.interpolate_H_kwargs,
             )
@@ -189,7 +193,7 @@ class GSeparableKernel(_Kernel):
         # interpolate R3
         weight_Rn = self.interpolate_Rn(
             self.weight.repeat_interleave(num_out_H, dim=0),
-            H_product_Rn.repeat(self.out_channels, 1, 1, 1, 1),
+            H_product_Rn.repeat(self.out_channels, *product_dims),
             **self.interpolate_H_kwargs,
         ).view(
             self.out_channels,
@@ -242,6 +246,7 @@ class GSubgroupKernel(_Kernel):
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> tuple[Tensor, Tensor]:
         num_in_H, num_out_H = in_H.shape[0], out_H.shape[0]
+        H_dims = in_H.shape[1:]
 
         out_H_inverse = self.inverse_H(out_H)
 
@@ -250,7 +255,7 @@ class GSubgroupKernel(_Kernel):
         # interpolate SO3
         weight = (
             self.interpolate_H(
-                H_product_H.view(-1, 3, 3),
+                H_product_H.view(-1, *H_dims),
                 self.weight.transpose(0, 2).reshape(1, self.num_H, -1),
                 **self.interpolate_H_kwargs,
             )
@@ -321,6 +326,7 @@ class GKernel(_Kernel):
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> Tensor:
         num_in_H, num_out_H = in_H.shape[0], out_H.shape[0]
+        H_dims = in_H.shape[1:]
 
         out_H_inverse = self.inverse_H(out_H)
 
@@ -329,7 +335,7 @@ class GKernel(_Kernel):
 
         # interpolate SO3
         weight = self.interpolate_H(
-            H_product_H.view(-1, 3, 3),
+            H_product_H.view(-1, *H_dims),
             self._grid_H,
             self.weight.transpose(0, 2).reshape(self.num_H, -1),
             **self.interpolate_H_kwargs,
