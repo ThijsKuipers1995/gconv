@@ -118,7 +118,8 @@ class GLiftingKernel(GroupKernel):
             self.out_channels, num_H, self.in_channels // self.groups, *self.kernel_size
         )
 
-        weight = weight if self.mask is None else self.mask * weight
+        if self.mask is not None:
+            weight = self.mask * weight
 
         if self.det_H is not None:
             weight = self.det_H(H).view(-1, *self.weight_dims) * weight
@@ -221,7 +222,8 @@ class GSeparableKernel(GroupKernel):
             *self.kernel_size,
         )
 
-        weight = weight if self.mask is None else self.mask * weight
+        if self.mask is not None:
+            weight = self.mask * weight
 
         if self.det_H is not None:
             weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
@@ -392,7 +394,8 @@ class GKernel(GroupKernel):
             .transpose(1, 3)
         )
 
-        weight = weight if self.mask is None else self.mask * weight
+        if self.mask is not None:
+            weight = self.mask * weight
 
         if self.det_H is not None:
             weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
