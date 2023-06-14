@@ -53,7 +53,7 @@ class GroupConvNd(nn.Module):
 
         self.padding_mode = padding_mode
 
-        # set padding settings
+        # init padding settings
         if isinstance(self.padding, str):
             self._reversed_padding_repeated_twice = [0, 0] * len(kernel.kernel_size)
             if padding == "same":
@@ -79,6 +79,10 @@ class GroupConvNd(nn.Module):
         elif conv_mode == "3d":
             self._conv_forward = self._conv3d_forward
             bias_shape = (1, 1, 1, 1)
+        else:
+            raise ValueError(
+                f"Unknown conv mode: got {conv_mode=}, expected `2d` or `3d`."
+            )
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, *bias_shape))
@@ -90,6 +94,7 @@ class GroupConvNd(nn.Module):
 
         if self.bias is None:
             return
+
         fan_in, _ = init._calculate_fan_in_and_fan_out(self.kernel.weight)
         if fan_in != 0:
             bound = 1 / math.sqrt(fan_in)

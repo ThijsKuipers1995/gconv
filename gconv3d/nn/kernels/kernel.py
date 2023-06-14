@@ -165,6 +165,7 @@ class GSeparableKernel(GroupKernel):
         )
 
         self.weight_Rn = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
+        self.weight = self.weight_Rn
 
         self.reset_parameterss()
 
