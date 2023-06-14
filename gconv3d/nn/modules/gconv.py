@@ -189,7 +189,7 @@ class GSeparableConvNd(GroupConvNd):
         N, _, _, *input_dims = input.shape
         num_in_H, num_out_H = in_H.shape[0], out_H.shape[0]
 
-        weight_H, weight_Rn = self.kernel(in_H, out_H)
+        weight_H, weight = self.kernel(in_H, out_H)
 
         # subgroup conv
         input = self._conv_forward(
@@ -203,9 +203,9 @@ class GSeparableConvNd(GroupConvNd):
         )
 
         # spatial conv
-        input = self._conv_forward(
-            input, weight_Rn, self.out_channels * num_out_H
-        ).view(N, self.out_channels, num_out_H, *input.shape[2:])
+        input = self._conv_forward(input, weight, self.out_channels * num_out_H).view(
+            N, self.out_channels, num_out_H, *input.shape[2:]
+        )
 
         input = input if self.bias is None else input + self.bias
 

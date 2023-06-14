@@ -164,14 +164,13 @@ class GSeparableKernel(GroupKernel):
             torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
         )
 
-        self.weight_Rn = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
-        self.weight = self.weight_Rn
+        self.weight = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
 
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
         init.kaiming_uniform_(self.weight_H, a=math.sqrt(5))
-        init.kaiming_uniform_(self.weight_Rn, a=math.sqrt(5))
+        init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> tuple[Tensor, Tensor]:
         num_in_H, num_out_H = in_H.shape[0], out_H.shape[0]
@@ -203,8 +202,8 @@ class GSeparableKernel(GroupKernel):
         )
 
         # interpolate R3
-        weight_Rn = self.interpolate_Rn(
-            self.weight_Rn.repeat_interleave(num_out_H, dim=0),
+        weight = self.interpolate_Rn(
+            self.weight.repeat_interleave(num_out_H, dim=0),
             H_product_Rn.repeat(self.out_channels, *product_dims),
             **self.interpolate_Rn_kwargs,
         ).view(
@@ -214,10 +213,10 @@ class GSeparableKernel(GroupKernel):
             *self.kernel_size,
         )
 
-        weight_Rn = weight_Rn if self.mask is None else self.mask * weight_Rn
-        weight_Rn = weight_Rn if self.det_H is None else self.det_H * weight_Rn
+        weight = weight if self.mask is None else self.mask * weight
+        weight = weight if self.det_H is None else self.det_H * weight
 
-        return weight_H, weight_Rn
+        return weight_H, weight
 
 
 class GSubgroupKernel(GroupKernel):
