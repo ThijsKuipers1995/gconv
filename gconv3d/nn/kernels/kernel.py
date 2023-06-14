@@ -74,7 +74,7 @@ class GLiftingKernel(GroupKernel):
         left_apply_to_Rn: Callable | None = None,
         interpolate_Rn: Callable | None = None,
         interpolate_Rn_kwargs: dict = {},
-    ):
+    ) -> None:
         super().__init__(
             in_channels,
             out_channels,
@@ -95,9 +95,9 @@ class GLiftingKernel(GroupKernel):
             torch.empty(out_channels, in_channels // groups, *self.kernel_size)
         )
 
-        self.reset_parameterss()
+        self.reset_parameters()
 
-    def reset_parameterss(self):
+    def reset_parameters(self):
         init.kaiming_normal_(self.weight, a=math.sqrt(5))
 
     def forward(self, H) -> Tensor:
@@ -167,9 +167,9 @@ class GSeparableKernel(GroupKernel):
         self.weight_Rn = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
         self.weight = self.weight_Rn
 
-        self.reset_parameterss()
+        self.reset_parameters()
 
-    def reset_parameterss(self) -> None:
+    def reset_parameters(self) -> None:
         init.kaiming_uniform_(self.weight_H, a=math.sqrt(5))
         init.kaiming_uniform_(self.weight_Rn, a=math.sqrt(5))
 
@@ -253,9 +253,9 @@ class GSubgroupKernel(GroupKernel):
             torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
         )
 
-        self.reset_parameterss()
+        self.reset_parameters()
 
-    def reset_parameterss(self) -> None:
+    def reset_parameters(self) -> None:
         init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> Tensor:
@@ -335,9 +335,9 @@ class GKernel(GroupKernel):
                 *kernel_size,
             )
         )
-        self.reset_parameterss()
+        self.reset_parameters()
 
-    def reset_parameterss(self) -> None:
+    def reset_parameters(self) -> None:
         init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def forward(self, in_H: Tensor, out_H: Tensor) -> Tensor:
