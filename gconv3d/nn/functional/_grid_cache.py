@@ -12,7 +12,7 @@ def save_grid(
         - type: Grid type, e.g., SO3.
         - parameterization: Parameterization, e.g., "quat".
     """
-    if overwrite:
+    if not overwrite:
         try:
             load_grid(grid.shape[0], grid_type, parameterization)
         except KeyError:
