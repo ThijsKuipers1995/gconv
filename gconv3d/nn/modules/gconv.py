@@ -276,7 +276,7 @@ class GSeparableConvNd(GroupConvNd):
             weight_H.reshape(
                 self.out_channels * num_out_H,
                 (self.in_channels // self.groups) * num_in_H,
-                *(1 for _ in self.kernel_size),
+                *weight_H.shape[3:],
             ),
             self.groups,
         )

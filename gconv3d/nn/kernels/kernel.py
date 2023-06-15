@@ -197,7 +197,7 @@ class GSeparableKernel(GroupKernel):
         self.weight = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
 
         # for expanding determinant to correct size
-        self.weight_dims = (1,) * (self.weight.ndim - 2)
+        self.weight_dims = (1,) * len(kernel_size)
 
         self.reset_parameters()
 
@@ -229,6 +229,7 @@ class GSeparableKernel(GroupKernel):
                 num_out_H,
                 self.in_channels // self.groups,
                 self.out_channels,
+                *self.weight_dims,
             )
             .transpose(0, 3)
             .transpose(1, 3)
