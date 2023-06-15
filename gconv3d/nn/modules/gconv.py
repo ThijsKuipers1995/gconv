@@ -30,7 +30,12 @@ class GroupConvNd(nn.Module):
 
     def __init__(
         self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: tuple,
+        group_kernel_size: int,
         kernel: GroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -40,20 +45,58 @@ class GroupConvNd(nn.Module):
     ) -> None:
         super().__init__()
 
+        if groups <= 0:
+            raise ValueError("groups must be a positive integer")
+        if in_channels % groups != 0:
+            raise ValueError("in_channels must be divisible by groups")
+        if out_channels % groups != 0:
+            raise ValueError("out_channels must be divisible by groups")
+        valid_padding_strings = {"same", "valid"}
+        if isinstance(padding, str):
+            if padding not in valid_padding_strings:
+                raise ValueError(
+                    "Invalid padding string {!r}, should be one of {}".format(
+                        padding, valid_padding_strings
+                    )
+                )
+            if padding == "same" and any(s != 1 for s in stride):
+                raise ValueError(
+                    "padding='same' is not supported for strided convolutions"
+                )
+
+        valid_padding_modes = {"zeros", "reflect", "replicate", "circular"}
+        if padding_mode not in valid_padding_modes:
+            raise ValueError(
+                "padding_mode must be one of {}, but got padding_mode='{}'".format(
+                    valid_padding_modes, padding_mode
+                )
+            )
+
         self.kernel = kernel
 
         # just for easy access
-        self.in_channels = kernel.in_channels
-        self.out_channels = kernel.out_channels
-        self.kernel_size = kernel.kernel_size
-        self.group_kernel_size = kernel.group_kernel_size
-        self.groups = kernel.groups
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.group_kernel_size = group_kernel_size
+        self.groups = groups
 
         self.stride = stride
         self.padding = padding
         self.dilation = dilation
 
         self.padding_mode = padding_mode
+
+        if conv_mode == "2d":
+            self._conv_forward = self._conv2d_forward
+            bias_shape = (1, 1, 1)
+        elif conv_mode == "3d":
+            self._conv_forward = self._conv3d_forward
+            bias_shape = (1, 1, 1, 1)
+        else:
+            raise ValueError(
+                f"Unknown conv mode: got {conv_mode=}, expected `2d` or `3d`."
+            )
 
         # init padding settings
         if isinstance(self.padding, str):
@@ -142,7 +185,12 @@ class GroupConvNd(nn.Module):
 class GLiftingConvNd(GroupConvNd):
     def __init__(
         self,
-        kernel: GLiftingKernel,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: tuple,
+        group_kernel_size: int,
+        kernel: GroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -151,7 +199,18 @@ class GLiftingConvNd(GroupConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode, bias
+            in_channels,
+            out_channels,
+            kernel_size,
+            group_kernel_size,
+            kernel,
+            groups,
+            stride,
+            padding,
+            dilation,
+            padding_mode,
+            conv_mode,
+            bias,
         )
 
     def forward(self, input: Tensor, H: Tensor) -> tuple[Tensor, Tensor]:
@@ -163,7 +222,6 @@ class GLiftingConvNd(GroupConvNd):
         input = self._conv_forward(
             input,
             weight.reshape(-1, self.in_channels // self.groups, *self.kernel_size),
-            num_out_H,
             self.groups,
         ).view(N, self.out_channels, num_out_H, *input.shape[2:])
 
@@ -176,7 +234,12 @@ class GLiftingConvNd(GroupConvNd):
 class GSeparableConvNd(GroupConvNd):
     def __init__(
         self,
-        kernel: GSeparableKernel,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: tuple,
+        group_kernel_size: int,
+        kernel: GroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -185,7 +248,18 @@ class GSeparableConvNd(GroupConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode, bias
+            in_channels,
+            out_channels,
+            kernel_size,
+            group_kernel_size,
+            kernel,
+            groups,
+            stride,
+            padding,
+            dilation,
+            padding_mode,
+            conv_mode,
+            bias,
         )
 
     def forward(
@@ -202,15 +276,21 @@ class GSeparableConvNd(GroupConvNd):
             weight_H.reshape(
                 self.out_channels * num_out_H,
                 (self.in_channels // self.groups) * num_in_H,
-                *self.kernel_size,
+                *(1 for _ in self.kernel_size),
             ),
             self.groups,
         )
 
         # spatial conv
-        input = self._conv_forward(input, weight, self.out_channels * num_out_H).view(
-            N, self.out_channels, num_out_H, *input.shape[2:]
-        )
+        input = self._conv_forward(
+            input,
+            weight.reshape(
+                self.out_channels * num_out_H,
+                1,
+                *self.kernel_size,
+            ),
+            self.out_channels * num_out_H,
+        ).view(N, self.out_channels, num_out_H, *input.shape[2:])
 
         if self.bias is not None:
             input = input + self.bias
@@ -221,7 +301,12 @@ class GSeparableConvNd(GroupConvNd):
 class GConvNd(GroupConvNd):
     def __init__(
         self,
-        kernel: GKernel | GSubgroupKernel,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: tuple,
+        group_kernel_size: int,
+        kernel: GroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -230,7 +315,18 @@ class GConvNd(GroupConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode, bias
+            in_channels,
+            out_channels,
+            kernel_size,
+            group_kernel_size,
+            kernel,
+            groups,
+            stride,
+            padding,
+            dilation,
+            padding_mode,
+            conv_mode,
+            bias,
         )
 
     def forward(
@@ -249,7 +345,7 @@ class GConvNd(GroupConvNd):
                 *self.kernel_size,
             ),
             self.groups,
-        ).view(N, self.out_channels, num_out_H, input.shape[2:])
+        ).view(N, self.out_channels, num_out_H, *input.shape[3:])
 
         if self.bias is not None:
             input = input + self.bias
@@ -260,7 +356,12 @@ class GConvNd(GroupConvNd):
 class GLiftingConv2d(GLiftingConvNd):
     def __init__(
         self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
         kernel: GLiftingKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -268,40 +369,30 @@ class GLiftingConv2d(GLiftingConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode="2d", bias=bias
+            in_channels,
+            out_channels,
+            _pair(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _pair(stride),
+            padding,
+            _pair(dilation),
+            padding_mode,
+            conv_mode="2d",
+            bias=bias,
         )
 
 
 class GSeparableConv2d(GSeparableConvNd):
     def __init__(
         self,
-        kernel: GSeparableKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "2d", bias)
-
-
-class GConv2d(GConvNd):
-    def __init__(
-        self,
-        kernel: GKernel | GSubgroupKernel,
-        stride: int = 1,
-        padding: int | str = 0,
-        dilation: int = 1,
-        padding_mode: str = "zeros",
-        bias: bool = False,
-    ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "2d", bias)
-
-
-class GLiftingConv3d(GLiftingConvNd):
-    def __init__(
-        self,
-        kernel: GLiftingKernel,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
+        kernel: GSubgroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
@@ -309,31 +400,140 @@ class GLiftingConv3d(GLiftingConvNd):
         bias: bool = False,
     ) -> None:
         super().__init__(
-            kernel, stride, padding, dilation, padding_mode, conv_mode="3d", bias=bias
+            in_channels,
+            out_channels,
+            _pair(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _pair(stride),
+            padding,
+            _pair(dilation),
+            padding_mode,
+            conv_mode="2d",
+            bias=bias,
+        )
+
+
+class GConv2d(GConvNd):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
+        kernel: GKernel | GSubgroupKernel,
+        groups: int = 1,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(
+            in_channels,
+            out_channels,
+            _pair(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _pair(stride),
+            padding,
+            _pair(dilation),
+            padding_mode,
+            conv_mode="2d",
+            bias=bias,
+        )
+
+
+class GLiftingConv3d(GLiftingConvNd):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
+        kernel: GLiftingKernel,
+        groups: int = 1,
+        stride: int = 1,
+        padding: int | str = 0,
+        dilation: int = 1,
+        padding_mode: str = "zeros",
+        bias: bool = False,
+    ) -> None:
+        super().__init__(
+            in_channels,
+            out_channels,
+            _triple(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _triple(stride),
+            padding,
+            _triple(dilation),
+            padding_mode,
+            conv_mode="3d",
+            bias=bias,
         )
 
 
 class GSeparableConv3d(GSeparableConvNd):
     def __init__(
         self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
         kernel: GSeparableKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "3d", bias)
+        super().__init__(
+            in_channels,
+            out_channels,
+            _triple(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _triple(stride),
+            padding,
+            _triple(dilation),
+            padding_mode,
+            conv_mode="3d",
+            bias=bias,
+        )
 
 
 class GConv3d(GConvNd):
     def __init__(
         self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: int,
         kernel: GKernel | GSubgroupKernel,
+        groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
-        super().__init__(kernel, stride, padding, dilation, padding_mode, "3d", bias)
+        super().__init__(
+            in_channels,
+            out_channels,
+            _triple(kernel_size),
+            group_kernel_size,
+            kernel,
+            groups,
+            _triple(stride),
+            padding,
+            _triple(dilation),
+            padding_mode,
+            conv_mode="3d",
+            bias=bias,
+        )

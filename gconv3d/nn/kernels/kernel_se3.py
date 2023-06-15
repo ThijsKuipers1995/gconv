@@ -22,11 +22,16 @@ class GLiftingKernelSE3(GLiftingKernel):
         in_channels,
         out_channels,
         kernel_size,
+        group_kernel_size: int = 4,
         groups: int = 1,
         mode: str = "bilinear",
         padding_mode: str = "border",
         mask: bool = True,
+        grid_H: Optional[Tensor] = None,
     ):
+
+        if grid_H is None:
+            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -38,6 +43,7 @@ class GLiftingKernelSE3(GLiftingKernel):
             in_channels,
             out_channels,
             (kernel_size, kernel_size, kernel_size),
+            grid_H,
             grid_Rn,
             groups,
             mask=mask,
@@ -63,11 +69,10 @@ class GSeparableKernelSE3(GSeparableKernel):
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ) -> None:
-        grid_H = (
-            grid_H
-            if grid_H is not None
-            else gF.create_grid_SO3("uniform", size=group_kernel_size)
-        )
+
+        if grid_H is None:
+            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
+
         grid_Rn = gF.create_grid_R3(kernel_size)
 
         width = (
@@ -117,11 +122,10 @@ class GKernelSE3(GKernel):
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ) -> None:
-        grid_H = (
-            grid_H
-            if grid_H is not None
-            else gF.create_grid_SO3("uniform", size=group_kernel_size)
-        )
+
+        if grid_H is None:
+            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
+
         grid_Rn = gF.create_grid_R3(kernel_size)
 
         width = (

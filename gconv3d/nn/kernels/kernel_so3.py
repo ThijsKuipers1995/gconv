@@ -26,11 +26,9 @@ class GSubgroupKernelSO3(GSubgroupKernel):
         width: float = 0.0,
         grid_H: Optional[Tensor] = None,
     ) -> None:
-        grid_H = (
-            grid_H
-            if grid_H is not None
-            else gF.create_grid_SO3("uniform", size=group_size)
-        )
+
+        if grid_H is None:
+            grid_H = gF.create_grid_SO3("uniform", size=group_size)
 
         width = width if width else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
 

@@ -6,7 +6,7 @@ lifting kernels.
 """
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
@@ -25,6 +25,8 @@ class GroupKernel(nn.Module):
         "group_kernel_size",
         "groups",
         "mask",
+        "grid_H",
+        "grid_Rn",
         "det_H",
         "inverse_H",
         "left_apply_to_H",
@@ -45,6 +47,8 @@ class GroupKernel(nn.Module):
         kernel_size: tuple,
         group_kernel_size: int,
         groups: int = 1,
+        grid_H: Optional[Tensor] = None,
+        grid_Rn: Optional[Tensor] = None,
         mask: Tensor | None = None,
         det_H: Callable | None = None,
         inverse_H: Callable | None = None,
@@ -65,6 +69,9 @@ class GroupKernel(nn.Module):
 
         self.groups = groups
 
+        self.register_buffer("grid_H", grid_H)
+        self.register_buffer("grid_Rn", grid_Rn)
+
         self.register_buffer("mask", mask)
 
         self.det_H = det_H
@@ -78,13 +85,12 @@ class GroupKernel(nn.Module):
 
 
 class GLiftingKernel(GroupKernel):
-    __constants__ = ["grid_Rn"]
-
     def __init__(
         self,
         in_channels,
         out_channels,
         kernel_size,
+        grid_H,
         grid_Rn,
         groups: int = 1,
         mask: Tensor | None = None,
@@ -98,8 +104,10 @@ class GLiftingKernel(GroupKernel):
             in_channels,
             out_channels,
             kernel_size,
-            group_kernel_size=0,
+            grid_H.shape[0],
             groups=groups,
+            grid_H=grid_H,
+            grid_Rn=grid_Rn,
             mask=mask,
             det_H=det_H,
             inverse_H=inverse_H,
@@ -107,8 +115,6 @@ class GLiftingKernel(GroupKernel):
             interpolate_Rn=interpolate_Rn,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
         )
-
-        self.register_buffer("grid_Rn", grid_Rn)
 
         self.weight = torch.nn.Parameter(
             torch.empty(out_channels, in_channels // groups, *self.kernel_size)
@@ -147,8 +153,6 @@ class GLiftingKernel(GroupKernel):
 
 
 class GSeparableKernel(GroupKernel):
-    __constants__ = ["grid_H", "grid_Rn"]
-
     def __init__(
         self,
         in_channels: int,
@@ -172,6 +176,8 @@ class GSeparableKernel(GroupKernel):
             out_channels,
             kernel_size,
             group_kernel_size=grid_H.shape[0],
+            grid_H=grid_H,
+            grid_Rn=grid_Rn,
             groups=groups,
             mask=mask,
             det_H=det_H,
@@ -183,9 +189,6 @@ class GSeparableKernel(GroupKernel):
             interpolate_H_kwargs=interpolate_H_kwargs,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
         )
-
-        self.register_buffer("grid_H", grid_H)
-        self.register_buffer("grid_Rn", grid_Rn)
 
         self.weight_H = nn.Parameter(
             torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
@@ -253,8 +256,6 @@ class GSeparableKernel(GroupKernel):
 
 
 class GSubgroupKernel(GroupKernel):
-    __constants__ = ["grid_H"]
-
     def __init__(
         self,
         in_channels: int,
@@ -273,6 +274,7 @@ class GSubgroupKernel(GroupKernel):
             out_channels,
             kernel_size,
             group_kernel_size=grid_H.shape[0],
+            grid_H=grid_H,
             groups=groups,
             det_H=det_H,
             inverse_H=inverse_H,
@@ -280,8 +282,6 @@ class GSubgroupKernel(GroupKernel):
             interpolate_H=interpolate_H,
             interpolate_H_kwargs=interpolate_H_kwargs,
         )
-
-        self.register_buffer("grid_H", grid_H)
 
         self.weight = nn.Parameter(
             torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
@@ -323,8 +323,6 @@ class GSubgroupKernel(GroupKernel):
 
 
 class GKernel(GroupKernel):
-    __constants__ = ["grid_H", "grid_Rn"]
-
     def __init__(
         self,
         in_channels: int,
@@ -348,6 +346,8 @@ class GKernel(GroupKernel):
             out_channels,
             kernel_size,
             group_kernel_size=grid_H.shape[0],
+            grid_H=grid_H,
+            grid_Rn=grid_Rn,
             groups=groups,
             mask=mask,
             det_H=det_H,
@@ -359,9 +359,6 @@ class GKernel(GroupKernel):
             interpolate_H_kwargs=interpolate_H_kwargs,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
         )
-
-        self.register_buffer("grid_H", grid_H)
-        self.register_buffer("grid_Rn", grid_Rn)
 
         self.weight = nn.Parameter(
             torch.empty(

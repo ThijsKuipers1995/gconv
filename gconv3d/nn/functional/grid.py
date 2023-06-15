@@ -22,9 +22,9 @@ def create_grid_R3(size: int) -> Tensor:
         - Tensor containing R3 grid of shape (size, size, size, 3).
     """
     x = torch.linspace(-1, 1, size)
-    Z, Y, X = torch.meshgrid(x, x, x, indexing="ij")
+    X, Y, Z = torch.meshgrid(x, x, x, indexing="ij")
 
-    return torch.stack((X, Y, Z), dim=-1)
+    return torch.stack((Z, Y, X), dim=-1)
 
 
 def _create_uniform_grid(
