@@ -45,7 +45,7 @@ class GroupKernel(nn.Module):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int,
+        group_kernel_size: int,  # TODO: change to tuple
         groups: int = 1,
         grid_H: Optional[Tensor] = None,
         grid_Rn: Optional[Tensor] = None,
@@ -191,7 +191,7 @@ class GSeparableKernel(GroupKernel):
         )
 
         self.weight_H = nn.Parameter(
-            torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
+            torch.empty(self.group_kernel_size, out_channels, in_channels // groups)
         )
 
         self.weight = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
@@ -220,7 +220,7 @@ class GSeparableKernel(GroupKernel):
         weight_H = (
             self.interpolate_H(
                 H_product_H.view(-1, *H_dims),
-                self.weight_H.transpose(0, 2).reshape(self.group_kernel_size, -1),
+                self.weight_H.reshape(self.group_kernel_size, -1),
                 self.grid_H,
                 **self.interpolate_H_kwargs,
             )
@@ -285,7 +285,7 @@ class GSubgroupKernel(GroupKernel):
         )
 
         self.weight = nn.Parameter(
-            torch.empty(out_channels, in_channels // groups, self.group_kernel_size)
+            torch.empty(self.group_kernel_size, out_channels, in_channels // groups)
         )
 
         self.reset_parameters()
@@ -305,7 +305,7 @@ class GSubgroupKernel(GroupKernel):
         weight = (
             self.interpolate_H(
                 H_product_H.view(-1, *H_dims),
-                self.weight.transpose(0, 2).reshape(self.group_kernel_size, -1),
+                self.weight.reshape(self.group_kernel_size, -1),
                 self.grid_H,
                 **self.interpolate_H_kwargs,
             )
