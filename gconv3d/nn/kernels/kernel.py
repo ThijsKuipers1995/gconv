@@ -147,7 +147,7 @@ class GLiftingKernel(GroupKernel):
             weight = self.mask * weight
 
         if self.det_H is not None:
-            weight = self.det_H(H).view(-1, *self.weight_dims) * weight
+            weight = weight / self.det_H(H).view(-1, *self.weight_dims)
 
         return weight
 
@@ -251,7 +251,7 @@ class GSeparableKernel(GroupKernel):
             weight = self.mask * weight
 
         if self.det_H is not None:
-            weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
+            weight = weight / self.det_H(out_H).view(-1, *self.weight_dims)
 
         return weight_H, weight
 
@@ -421,6 +421,6 @@ class GKernel(GroupKernel):
             weight = self.mask * weight
 
         if self.det_H is not None:
-            weight = self.det_H(out_H).view(-1, *self.weight_dims) * weight
+            weight = weight / self.det_H(out_H).view(-1, *self.weight_dims)
 
         return weight
