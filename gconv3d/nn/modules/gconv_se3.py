@@ -4,7 +4,7 @@ from torch import Tensor
 from .gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
 from gconv3d.nn.kernels import GLiftingKernelSE3, GSeparableKernelSE3, GKernelSE3
 
-from gconv3d.geometry import rotation as R
+from gconv3d.geometry import so3
 
 
 class GLiftingConvSE3(GLiftingConv3d):
@@ -61,7 +61,7 @@ class GLiftingConvSE3(GLiftingConv3d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = R.left_apply_matrix(R.random_matrix(1), H)
+            H = so3.left_apply_matrix(so3.random_matrix(1), H)
 
         return super().forward(input, H)
 
@@ -124,7 +124,7 @@ class GSeparableConvSE3(GSeparableConv3d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = R.left_apply_matrix(R.random_matrix(1), out_H)
+            out_H = so3.left_apply_matrix(so3.random_matrix(1), out_H)
 
         return super().forward(input, in_H, out_H)
 
@@ -187,6 +187,6 @@ class GConvSE3(GConv3d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = R.left_apply_matrix(R.random_matrix(1), out_H)
+            out_H = so3.left_apply_matrix(so3.random_matrix(1), out_H)
 
         return super().forward(input, in_H, out_H)

@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 
-from gconv3d.geometry import rotation as R
+from gconv3d.geometry import so3
 from gconv3d.geometry import interpolation
 
 import gconv3d.nn.functional._grid_cache as grid_cache
@@ -38,7 +38,7 @@ def _create_uniform_grid(
     try:
         return grid_cache.load_grid(size, grid_type, parameterization)
     except KeyError:
-        grid = R.uniform_grid(
+        grid = so3.uniform_grid(
             size, steps=steps, device=device, parameterization=parameterization
         )
 
@@ -59,15 +59,15 @@ def create_grid_SO3(
     type = type.lower()
 
     if type == "eye":
-        grid = R.identity(device)
+        grid = so3.identity(device)
     elif type == "k" or type == "klein":
-        grid = R.klein_group(device)
+        grid = so3.klein_group(device)
     elif type == "t" or type == "tetrahedral":
-        grid = R.tetrahedral(device)
+        grid = so3.tetrahedral(device)
     elif type == "o" or type == "octahedral":
-        grid = R.octahedral(device)
+        grid = so3.octahedral(device)
     elif type == "i" or type == "icosahedral":
-        grid = R.icosahedral(device)
+        grid = so3.icosahedral(device)
     elif type == "u" or type == "uniform":
         return _create_uniform_grid(
             size,
@@ -78,11 +78,11 @@ def create_grid_SO3(
             cache_grid=cache_grid,
         )
     elif type == "r" or type == "random":
-        grid = R.random_quat(size, device)
+        grid = so3.random_quat(size, device)
     else:
         raise ValueError(f"Unknown type. got {type=}.")
 
-    return grid if parameterization.lower() == "quat" else R.quat_to_matrix(grid)
+    return grid if parameterization.lower() == "quat" else so3.quat_to_matrix(grid)
 
 
 def grid_sample(
@@ -125,24 +125,24 @@ def so3_sample(
     """
     # If input are matrices, convert to quats
     if grid.ndim == 3:
-        grid = R.matrix_to_quat(grid)
+        grid = so3.matrix_to_quat(grid)
 
     if signal_grid.ndim == 3:
-        signal_grid = R.matrix_to_quat(signal_grid)
+        signal_grid = so3.matrix_to_quat(signal_grid)
 
     if mode == "nearest":
         return interpolation.interpolate_NN(
             grid[None],
             signal_grid[None],
             signal[None],
-            dist_fn=R.geodesic_distance,
+            dist_fn=so3.geodesic_distance,
         ).squeeze(0)
     if mode == "rbf":
         return interpolation.interpolate_RBF(
             grid[None],
             signal_grid[None],
             signal[None],
-            dist_fn=R.geodesic_distance,
+            dist_fn=so3.geodesic_distance,
             width=width,
         ).squeeze(0)
     raise ValueError(f"unknown interpolation mode `{mode=}`.")

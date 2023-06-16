@@ -12,7 +12,7 @@ from gconv3d.nn.kernels import GKernel, GSeparableKernel, GLiftingKernel
 
 from torch import Tensor
 
-from gconv3d.geometry import rotation as R
+from gconv3d.geometry import so3
 from gconv3d.nn import functional as gF
 
 
@@ -47,8 +47,8 @@ class GLiftingKernelSE3(GLiftingKernel):
             grid_Rn,
             groups,
             mask=mask,
-            inverse_H=R.matrix_inverse,
-            left_apply_to_Rn=R.left_apply_to_R3,
+            inverse_H=so3.matrix_inverse,
+            left_apply_to_Rn=so3.left_apply_to_R3,
             interpolate_Rn=gF.grid_sample,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
         )
@@ -78,7 +78,7 @@ class GSeparableKernelSE3(GSeparableKernel):
         width = (
             group_mode_width
             if group_mode_width
-            else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
+            else 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
         )
 
         interpolate_H_kwargs = {"mode": group_mode, "width": width}
@@ -97,9 +97,9 @@ class GSeparableKernelSE3(GSeparableKernel):
             grid_Rn,
             groups,
             mask=mask,
-            inverse_H=R.matrix_inverse,
-            left_apply_to_H=R.left_apply_to_matrix,
-            left_apply_to_Rn=R.left_apply_to_R3,
+            inverse_H=so3.matrix_inverse,
+            left_apply_to_H=so3.left_apply_to_matrix,
+            left_apply_to_Rn=so3.left_apply_to_R3,
             interpolate_H=gF.so3_sample,
             interpolate_Rn=gF.grid_sample,
             interpolate_H_kwargs=interpolate_H_kwargs,
@@ -131,7 +131,7 @@ class GKernelSE3(GKernel):
         width = (
             group_mode_width
             if group_mode_width
-            else 0.8 * R.nearest_neighbour_distance(grid_H).mean()
+            else 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
         )
 
         interpolate_H_kwargs = {"mode": group_mode, "width": width}
@@ -150,9 +150,9 @@ class GKernelSE3(GKernel):
             grid_Rn,
             groups,
             mask=mask,
-            inverse_H=R.matrix_inverse,
-            left_apply_to_H=R.left_apply_to_matrix,
-            left_apply_to_Rn=R.left_apply_to_R3,
+            inverse_H=so3.matrix_inverse,
+            left_apply_to_H=so3.left_apply_to_matrix,
+            left_apply_to_Rn=so3.left_apply_to_R3,
             interpolate_H=gF.so3_sample,
             interpolate_Rn=gF.grid_sample,
             interpolate_H_kwargs=interpolate_H_kwargs,
