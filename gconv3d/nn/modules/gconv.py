@@ -95,7 +95,7 @@ class GroupConvNd(nn.Module):
             bias_shape = (1, 1, 1, 1)
         else:
             raise ValueError(
-                f"Unknown conv mode: got {conv_mode=}, expected `2d` or `3d`."
+                f"Unspported conv mode: got {conv_mode=}, expected `2d` or `3d`."
             )
 
         # init padding settings
@@ -116,17 +116,6 @@ class GroupConvNd(nn.Module):
         else:
             self._reversed_padding_repeated_twice = _reverse_repeat_tuple(
                 self.padding, 2
-            )
-
-        if conv_mode == "2d":
-            self._conv_forward = self._conv2d_forward
-            bias_shape = (1, 1, 1)
-        elif conv_mode == "3d":
-            self._conv_forward = self._conv3d_forward
-            bias_shape = (1, 1, 1, 1)
-        else:
-            raise ValueError(
-                f"Unknown conv mode: got {conv_mode=}, expected `2d` or `3d`."
             )
 
         if bias:
