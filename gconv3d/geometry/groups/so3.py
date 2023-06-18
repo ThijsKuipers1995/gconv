@@ -38,10 +38,13 @@ NOTE: The domains of the Euler and spherical parameterizations may not
 from math import pi
 from typing import Callable, Optional
 
+from gconv3d.geometry import interpolation
+import _grid_cache
+
 import torch
 from torch import Tensor
 
-from . import repulsion
+from .. import repulsion
 
 import warnings
 
@@ -540,19 +543,20 @@ def random_euler(shape: tuple[int] | int, device: Optional[str] = None) -> Tenso
 
 
 def uniform_grid(
-    n: int,
+    size: int,
     parameterization: str = "quat",
     steps: int = 200,
     step_size: Optional[float] = None,
     show_pbar: bool = True,
     device: Optional[str] = None,
+    cache_grid: bool = False,
 ) -> Tensor:
     """
     Creates a uniform grid of `n` rotations. Rotations will be uniform
     with respect to the geodesic distance.
 
     Arguments:
-        - n: Number of rotations in grid.
+        - size: Number of rotations in grid.
         - parameterization: Parameterization of the returned grid elements. Must
                             be either 'quat', 'matrix', or 'euler'. Defaults to
                             'quat'.
@@ -567,19 +571,29 @@ def uniform_grid(
     Returns:
         - Tensor containing uniform grid on SO3.
     """
-    match parameterization.lower():
-        case "quat":
-            param_fn = euler_to_quat
-        case "matrix":
-            param_fn = euler_to_matrix
-        case "euler":
-            param_fn = lambda x: matrix_to_euler(euler_to_matrix(x))
-        case _:
-            raise ValueError(f"Parameterization must be in {_PARAMETERIZATION}.")
+    try:
+        return _grid_cache.load_grid(size, "so3", parameterization)
+    except KeyError:
+        grid = uniform_grid(
+            size, steps=steps, device=device, parameterization=parameterization
+        )
 
-    step_size = step_size if step_size is not None else n ** (1 / 3)
+        if cache_grid:
+            _grid_cache.save_grid(grid, "so3", parameterization)
 
-    grid = random_euler(n, device=device)
+    parameterization = parameterization.lower()
+    if parameterization == "quat":
+        param_fn = euler_to_quat
+    elif parameterization == "matrix":
+        param_fn = euler_to_matrix
+    elif parameterization == "euler":
+        param_fn = lambda x: matrix_to_euler(euler_to_matrix(x))
+    else:
+        raise ValueError(f"Parameterization must be in {_PARAMETERIZATION}.")
+
+    step_size = step_size if step_size is not None else size ** (1 / 3)
+
+    grid = random_euler(size, device=device)
 
     repulsion.repulse(
         grid,
@@ -793,6 +807,52 @@ def uniform_grid_s2(
     grid = to_so3_fn(grid) if add_alpha else grid
 
     return param_fn(grid)
+
+
+def grid_sample(
+    grid: Tensor,
+    signal: Tensor,
+    signal_grid: Tensor,
+    mode: str = "rbf",
+    width: float = 0.5,
+) -> Tensor:
+    """
+    Samples SO3 signal on provided signal and corresponding SO3 signal grid
+    for the given grid of SO3 elements. Supports both matrix and euler
+    parameterizations.
+
+    Arguments:
+        - signal: SO3 signal to interpolate of shape `(H1, S)`.
+        - signal_grid: signal grid corresponding to signal of shape `(H1, 4)`.
+        - grid: Grid of SO3 elements to sample of shape `(H2, 4)`.
+        - width: Width used for RBF interpolation kernel.
+
+    Returns:
+        - Tensor of shape (H2, S) containing sampled signal.
+    """
+    # If input are matrices, convert to quats
+    if grid.ndim == 3:
+        grid = matrix_to_quat(grid)
+
+    if signal_grid.ndim == 3:
+        signal_grid = matrix_to_quat(signal_grid)
+
+    if mode == "nearest":
+        return interpolation.interpolate_NN(
+            grid[None],
+            signal_grid[None],
+            signal[None],
+            dist_fn=geodesic_distance,
+        ).squeeze(0)
+    if mode == "rbf":
+        return interpolation.interpolate_RBF(
+            grid[None],
+            signal_grid[None],
+            signal[None],
+            dist_fn=geodesic_distance,
+            width=width,
+        ).squeeze(0)
+    raise ValueError(f"unknown interpolation mode `{mode=}`.")
 
 
 ######################################

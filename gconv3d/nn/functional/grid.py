@@ -1,12 +1,12 @@
+from typing import Callable
 import torch
 from torch import Tensor
 
 from gconv3d.geometry import so3
 from gconv3d.geometry import interpolation
 
-import gconv3d.nn.functional._grid_cache as grid_cache
 
-import torch.nn.functional as F
+from torch.nn.functional import grid_sample
 
 
 def create_grid_R3(size: int) -> Tensor:
@@ -25,124 +25,3 @@ def create_grid_R3(size: int) -> Tensor:
     X, Y, Z = torch.meshgrid(x, x, x, indexing="ij")
 
     return torch.stack((Z, Y, X), dim=-1)
-
-
-def _create_uniform_grid(
-    size: int,
-    grid_type: str,
-    parameterization: str,
-    steps: int,
-    device: str = None,
-    cache_grid: bool = True,
-) -> Tensor:
-    try:
-        return grid_cache.load_grid(size, grid_type, parameterization)
-    except KeyError:
-        grid = so3.uniform_grid(
-            size, steps=steps, device=device, parameterization=parameterization
-        )
-
-        if cache_grid:
-            grid_cache.save_grid(grid, grid_type, parameterization)
-
-    return grid
-
-
-def create_grid_SO3(
-    type: str,
-    size: int = 1,
-    parameterization: str = "quat",
-    device: str = None,
-    steps: int = 1000,
-    cache_grid: bool = True,
-) -> Tensor:
-    type = type.lower()
-
-    if type == "eye":
-        grid = so3.identity(device)
-    elif type == "k" or type == "klein":
-        grid = so3.klein_group(device)
-    elif type == "t" or type == "tetrahedral":
-        grid = so3.tetrahedral(device)
-    elif type == "o" or type == "octahedral":
-        grid = so3.octahedral(device)
-    elif type == "i" or type == "icosahedral":
-        grid = so3.icosahedral(device)
-    elif type == "u" or type == "uniform":
-        return _create_uniform_grid(
-            size,
-            "so3",
-            parameterization.lower(),
-            steps=steps,
-            device=device,
-            cache_grid=cache_grid,
-        )
-    elif type == "r" or type == "random":
-        grid = so3.random_quat(size, device)
-    else:
-        raise ValueError(f"Unknown type. got {type=}.")
-
-    return grid if parameterization.lower() == "quat" else so3.quat_to_matrix(grid)
-
-
-def grid_sample(
-    signal: Tensor, grid: Tensor, mode: str = "bilinear", padding_mode="border"
-) -> Tensor:
-    """
-    TODO: arguments (see F.grid_sample)
-
-    Returns:
-        Tensor of shape `(N, G, C, W, H)` or `(N, G, C, D, W, H)`.
-    """
-    return F.grid_sample(
-        signal,
-        grid,
-        mode=mode,
-        padding_mode=padding_mode,
-    )
-
-
-def so3_sample(
-    grid: Tensor,
-    signal: Tensor,
-    signal_grid: Tensor,
-    mode: str = "rbf",
-    width: float = 0.5,
-) -> Tensor:
-    """
-    Samples SO3 signal on provided signal and corresponding SO3 signal grid
-    for the given grid of SO3 elements. Supports both matrix and euler
-    parameterizations.
-
-    Arguments:
-        - signal: SO3 signal to interpolate of shape `(H1, S)`.
-        - signal_grid: signal grid corresponding to signal of shape `(H1, 4)`.
-        - grid: Grid of SO3 elements to sample of shape `(H2, 4)`.
-        - width: Width used for RBF interpolation kernel.
-
-    Returns:
-        - Tensor of shape (H2, S) containing sampled signal.
-    """
-    # If input are matrices, convert to quats
-    if grid.ndim == 3:
-        grid = so3.matrix_to_quat(grid)
-
-    if signal_grid.ndim == 3:
-        signal_grid = so3.matrix_to_quat(signal_grid)
-
-    if mode == "nearest":
-        return interpolation.interpolate_NN(
-            grid[None],
-            signal_grid[None],
-            signal[None],
-            dist_fn=so3.geodesic_distance,
-        ).squeeze(0)
-    if mode == "rbf":
-        return interpolation.interpolate_RBF(
-            grid[None],
-            signal_grid[None],
-            signal[None],
-            dist_fn=so3.geodesic_distance,
-            width=width,
-        ).squeeze(0)
-    raise ValueError(f"unknown interpolation mode `{mode=}`.")

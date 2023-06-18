@@ -31,7 +31,7 @@ class GLiftingKernelSE3(GLiftingKernel):
     ):
 
         if grid_H is None:
-            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
+            grid_H = so3.uniform_grid(group_kernel_size, "matrix")
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -71,7 +71,7 @@ class GSeparableKernelSE3(GSeparableKernel):
     ) -> None:
 
         if grid_H is None:
-            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
+            grid_H = so3.uniform_grid(group_kernel_size, "matrix")
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -100,7 +100,7 @@ class GSeparableKernelSE3(GSeparableKernel):
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
             left_apply_to_Rn=so3.left_apply_to_R3,
-            interpolate_H=gF.so3_sample,
+            interpolate_H=so3.grid_sample,
             interpolate_Rn=gF.grid_sample,
             interpolate_H_kwargs=interpolate_H_kwargs,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
@@ -124,7 +124,7 @@ class GKernelSE3(GKernel):
     ) -> None:
 
         if grid_H is None:
-            grid_H = gF.create_grid_SO3("uniform", group_kernel_size, "matrix")
+            grid_H = so3.uniform_grid(group_kernel_size, "matrix")
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -153,7 +153,7 @@ class GKernelSE3(GKernel):
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
             left_apply_to_Rn=so3.left_apply_to_R3,
-            interpolate_H=gF.so3_sample,
+            interpolate_H=so3.grid_sample,
             interpolate_Rn=gF.grid_sample,
             interpolate_H_kwargs=interpolate_H_kwargs,
             interpolate_Rn_kwargs=interpolate_Rn_kwargs,
