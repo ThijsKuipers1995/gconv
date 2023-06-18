@@ -33,6 +33,7 @@ class GroupKernel(nn.Module):
         "left_apply_to_Rn",
         "interpolate_H",
         "interpolate_Rn",
+        "_group_kernel_dim",
     ]
 
     def reset_parameters(self) -> None:
@@ -43,7 +44,7 @@ class GroupKernel(nn.Module):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int,  # TODO: change to tuple
+        group_kernel_size: tuple,
         groups: int = 1,
         grid_H: Optional[Tensor] = None,
         grid_Rn: Optional[Tensor] = None,
@@ -64,6 +65,7 @@ class GroupKernel(nn.Module):
 
         self.kernel_size = kernel_size
         self.group_kernel_size = group_kernel_size
+        self._group_kernel_dim = sum(group_kernel_size)
 
         self.groups = groups
 
@@ -88,6 +90,7 @@ class GLiftingKernel(GroupKernel):
         in_channels,
         out_channels,
         kernel_size,
+        group_kernel_size: tuple,
         grid_H,
         grid_Rn,
         groups: int = 1,
@@ -102,7 +105,7 @@ class GLiftingKernel(GroupKernel):
             in_channels,
             out_channels,
             kernel_size,
-            grid_H.shape[0],
+            group_kernel_size,
             groups=groups,
             grid_H=grid_H,
             grid_Rn=grid_Rn,
@@ -156,6 +159,7 @@ class GSeparableKernel(GroupKernel):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
+        group_kernel_size: tuple,
         grid_H: Tensor,
         grid_Rn: Tensor,
         groups: int = 1,
@@ -173,7 +177,7 @@ class GSeparableKernel(GroupKernel):
             in_channels,
             out_channels,
             kernel_size,
-            group_kernel_size=grid_H.shape[0],
+            group_kernel_size=group_kernel_size,
             grid_H=grid_H,
             grid_Rn=grid_Rn,
             groups=groups,
@@ -189,7 +193,7 @@ class GSeparableKernel(GroupKernel):
         )
 
         self.weight_H = nn.Parameter(
-            torch.empty(self.group_kernel_size, out_channels, in_channels // groups)
+            torch.empty(self._group_kernel_dim, out_channels, in_channels // groups)
         )
 
         self.weight = nn.Parameter(torch.empty(out_channels, 1, *kernel_size))
@@ -218,7 +222,7 @@ class GSeparableKernel(GroupKernel):
         weight_H = (
             self.interpolate_H(
                 H_product_H.view(-1, *H_dims),
-                self.weight_H.reshape(self.group_kernel_size, -1),
+                self.weight_H.reshape(self._group_kernel_dim, -1),
                 self.grid_H,
                 **self.interpolate_H_kwargs,
             )
@@ -260,6 +264,7 @@ class GSubgroupKernel(GroupKernel):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
+        group_kernel_size: tuple,
         grid_H: Tensor,
         groups: int = 1,
         det_H: Callable | None = None,
@@ -272,7 +277,7 @@ class GSubgroupKernel(GroupKernel):
             in_channels,
             out_channels,
             kernel_size,
-            group_kernel_size=grid_H.shape[0],
+            group_kernel_size=group_kernel_size,
             grid_H=grid_H,
             groups=groups,
             det_H=det_H,
@@ -283,7 +288,7 @@ class GSubgroupKernel(GroupKernel):
         )
 
         self.weight = nn.Parameter(
-            torch.empty(self.group_kernel_size, out_channels, in_channels // groups)
+            torch.empty(self._group_kernel_dim, out_channels, in_channels // groups)
         )
 
         self.reset_parameters()
@@ -303,7 +308,7 @@ class GSubgroupKernel(GroupKernel):
         weight = (
             self.interpolate_H(
                 H_product_H.view(-1, *H_dims),
-                self.weight.reshape(self.group_kernel_size, -1),
+                self.weight.reshape(self._group_kernel_dim, -1),
                 self.grid_H,
                 **self.interpolate_H_kwargs,
             )
@@ -327,6 +332,7 @@ class GKernel(GroupKernel):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
+        group_kernel_size: tuple,
         grid_H: Tensor,
         grid_Rn: Tensor,
         groups: int = 1,
@@ -344,7 +350,7 @@ class GKernel(GroupKernel):
             in_channels,
             out_channels,
             kernel_size,
-            group_kernel_size=grid_H.shape[0],
+            group_kernel_size=group_kernel_size,
             grid_H=grid_H,
             grid_Rn=grid_Rn,
             groups=groups,
@@ -361,9 +367,9 @@ class GKernel(GroupKernel):
 
         self.weight = nn.Parameter(
             torch.empty(
+                self._group_kernel_dim,
                 out_channels,
                 in_channels // groups,
-                self.group_kernel_size,
                 *kernel_size,
             )
         )
@@ -388,7 +394,7 @@ class GKernel(GroupKernel):
         # interpolate SO3
         weight = self.interpolate_H(
             H_product_H.view(-1, *H_dims),
-            self.weight.transpose(0, 2).reshape(self.group_kernel_size, -1),
+            self.weight.reshape(self._group_kernel_dim, -1),
             self.grid_H,
             **self.interpolate_H_kwargs,
         ).view(

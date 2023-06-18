@@ -38,6 +38,7 @@ class GSubgroupKernelSO3(GSubgroupKernel):
             in_channels,
             out_channels,
             (1, 1, 1),
+            (grid_H.shape[0],),
             grid_H,
             groups,
             inverse_H=so3.matrix_inverse,
