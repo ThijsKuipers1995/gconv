@@ -1,10 +1,13 @@
+from typing import Optional
 import torch
 from torch import Tensor
 
 import so3
 
 
-def uniform_grid(size: tuple[int, int], matrix_only: bool = False) -> Tensor:
+def uniform_grid(
+    size: tuple[int, int], matrix_only: bool = False, device: Optional[str] = None
+) -> Tensor:
     """
     Creates a grid of uniform rotations and reflections. Each O3 element
     is represented as a 10 dimensional vector, where the first element
@@ -24,18 +27,18 @@ def uniform_grid(size: tuple[int, int], matrix_only: bool = False) -> Tensor:
     """
     n_rotations, n_reflections = size
 
-    R1 = so3.uniform_grid(n_rotations, "matrix")
-    R2 = so3.uniform_grid(n_reflections, "matrix")
+    R1 = so3.uniform_grid(n_rotations, "matrix", device=device)
+    R2 = so3.uniform_grid(n_reflections, "matrix", device=device)
     R = torch.vstack((R1, R2))
 
     if matrix_only:
         return R
 
-    coeff1 = torch.ones(n_rotations, 1)
-    coeff2 = -1 * torch.ones(n_reflections, 1)
+    coeff1 = torch.ones(n_rotations, 1, device=device)
+    coeff2 = -1 * torch.ones(n_reflections, 1, device=device)
     coeffs = torch.vstack((coeff1, coeff2))
 
-    grid = torch.cat((coeffs, R), dim=-1)
+    grid = torch.cat((coeffs, R.flatten(-2, -1)), dim=-1)
 
     return grid
 
@@ -148,7 +151,7 @@ def grid_sample(
     so3_idx = torch.where(coeffs == 1)[0]
     r_idx = torch.where(coeffs == -1)[0]
 
-    # sample rotations and reflections separately
+    # sample rotations and reflections if they exist
     if n_rotations:
         so3_signal = so3.grid_sample(
             R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=rotation_width
