@@ -44,11 +44,13 @@ def grid_sample(
     grid: Tensor,
     signal: Tensor,
     signal_grid: Tensor,
-    signal_grid_size: tuple,
-    mode: str = "rbf",
-    width: float = 0.5,
+    signal_grid_size: tuple[int, int],
+    rotation_mode: str = "rbf",
+    reflection_mode: str = "rbf",
+    rotation_width: float = 0.5,
+    reflection_width: float = 0.5,
 ):
-    n_rotations, _ = signal_grid_size
+    n_rotations, n_reflections = signal_grid_size
 
     coeffs, R = grid[:, 0], grid[:, 1:].view(-1, 3, 3)
 
@@ -58,17 +60,31 @@ def grid_sample(
     r_signal = signal[n_rotations:]
     r_signal_grid = signal_grid[n_rotations:]
 
-    # rotations and reflections are interpolated separately
-    so3_idx = torch.where(coeffs == 1)
-    r_idx = torch.where(coeffs == -1)
+    so3_idx = torch.where(coeffs == 1)[0]
+    r_idx = torch.where(coeffs == -1)[0]
 
-    # sample based on rotational part
-    so3_signal = so3.grid_sample(
-        R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=width
-    )
-    r_signal = so3.grid_sample(
-        R[r_idx], r_signal, r_signal_grid, mode=mode, width=width
-    )
+    # sample rotations and reflections separately
+    if n_rotations:
+        so3_signal = so3.grid_sample(
+            R[so3_idx],
+            so3_signal,
+            so3_signal_grid,
+            mode=rotation_mode,
+            width=rotation_width,
+        )
+    else:
+        so3_signal = so3_idx
+
+    if n_reflections:
+        r_signal = so3.grid_sample(
+            R[r_idx],
+            r_signal,
+            r_signal_grid,
+            mode=reflection_mode,
+            width=reflection_width,
+        )
+    else:
+        r_signal = r_idx
 
     sampled_signal = torch.vstack((so3_signal, r_signal))
 
