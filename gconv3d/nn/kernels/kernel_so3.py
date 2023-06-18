@@ -28,7 +28,7 @@ class GSubgroupKernelSO3(GSubgroupKernel):
     ) -> None:
 
         if grid_H is None:
-            grid_H = gF.create_grid_SO3("uniform", size=group_size)
+            grid_H = so3.uniform_grid(size=group_size)
 
         width = width if width else 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
 
@@ -42,6 +42,6 @@ class GSubgroupKernelSO3(GSubgroupKernel):
             groups,
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
-            interpolate_H=gF.so3_sample,
+            interpolate_H=so3.grid_sample,
             interpolate_H_kwargs=interpolate_H_kwargs,
         )

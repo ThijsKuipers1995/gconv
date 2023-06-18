@@ -1,1 +1,1 @@
-import so3
+from . import so3

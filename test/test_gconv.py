@@ -1,7 +1,7 @@
 import torch
 
 from gconv3d.nn import GLiftingConvSE3, GSeparableConvSE3, GConvSE3
-from gconv3d.geometry import rotation as R
+from gconv3d.geometry.groups import so3 as R
 
 
 import warnings

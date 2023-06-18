@@ -39,7 +39,7 @@ from math import pi
 from typing import Callable, Optional
 
 from gconv3d.geometry import interpolation
-import _grid_cache
+from . import _grid_cache
 
 import torch
 from torch import Tensor

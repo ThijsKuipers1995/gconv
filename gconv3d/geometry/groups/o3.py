@@ -4,16 +4,36 @@ from torch import Tensor
 import so3
 
 
-def uniform_grid(size: tuple[int, int]) -> Tensor:
-    n_rotations, n_reflections = size
+def uniform_grid(size: tuple[int, int], matrix_only: bool = False) -> Tensor:
+    """
+    Creates a grid of uniform rotations and reflections. Each O3 element
+    is represented as a 10 dimensional vector, where the first element
+    denotes the reflection coefficient, i.e., 1 or -1, and the remaining 9
+    elements denote the flattened rotation matrix.
 
-    coeff1 = torch.ones(n_rotations, 1)
-    coeff2 = -1 * torch.ones(n_reflections, 1)
-    coeffs = torch.vstack((coeff1, coeff2))
+    Alternatively, if matrix_only is true, the grids will only consists of
+    the rotation matrices, i.e., elements have a shape of 3 by 3.
+
+    Arguments:
+        - size: Tuple denoting `(n_rotations, n_reflections)`.
+        - matrix_only: If true, will only rotation matrix part of O3 grid.
+
+    Returns:
+        Tensor of shape `(n_rotations + n_reflections, 10)` or
+        `(n_rotations + n_reflections, 3, 3)` if matrix_only is true.
+    """
+    n_rotations, n_reflections = size
 
     R1 = so3.uniform_grid(n_rotations, "matrix")
     R2 = so3.uniform_grid(n_reflections, "matrix")
     R = torch.vstack((R1, R2))
+
+    if matrix_only:
+        return R
+
+    coeff1 = torch.ones(n_rotations, 1)
+    coeff2 = -1 * torch.ones(n_reflections, 1)
+    coeffs = torch.vstack((coeff1, coeff2))
 
     grid = torch.cat((coeffs, R), dim=-1)
 
@@ -21,6 +41,16 @@ def uniform_grid(size: tuple[int, int]) -> Tensor:
 
 
 def left_apply(H1: Tensor, H2: Tensor) -> Tensor:
+    """
+    Applies every element in H1 to every element in H2.
+
+    Arguments:
+        - H1: Tensor of shape `(N, 10)`.
+        - H2: Tensor of shape `(M, 10)`.
+
+    Returns:
+        Tensor of shape (N, M, 10).
+    """
     R1 = H1[:, 1:].view(-1, 3, 3)
     R2 = H2[:, 1:].view(-1, 3, 3)
 
@@ -34,6 +64,15 @@ def left_apply(H1: Tensor, H2: Tensor) -> Tensor:
 
 
 def inverse(H: Tensor) -> Tensor:
+    """
+    Returns the inverse of the given group elements.
+
+    Arguments
+        - H: Tensor of shape (..., 10).
+
+    Returns:
+        Tensor of shape (..., 10) of inverted elements.
+    """
     dims = H.shape[:-1]
 
     coeffs, R = H[..., 0, None], H[..., 1:].view(*dims, 3, 3)
@@ -45,11 +84,27 @@ def grid_sample(
     signal: Tensor,
     signal_grid: Tensor,
     signal_grid_size: tuple[int, int],
-    rotation_mode: str = "rbf",
-    reflection_mode: str = "rbf",
-    rotation_width: float = 0.5,
-    reflection_width: float = 0.5,
+    mode: str = "rbf",
+    width: float = 0.5,
 ):
+    """
+    Samples given O3 grid based on gived reference signal and
+    corresponding signal grid.
+
+    NOTE: It is assumed the signal and grid are ordered based on
+    rotations first, then reflections.
+
+    Arguments:
+        grid: Tensor of shape `(N, 10)` of O3 elements.
+        signal: Tensor of shape `(M, S)`.
+        signal_grid: Tensor of shape `(M, 3, 3)` of corresponding
+                     rotation elements.
+        signal_grid_size: Tuple of `(n_rotations, n_reflections)`
+                          where n_rotations + n_reflections = M.
+        mode: Interpolation mode used, supports "rbf" (default) and
+              "nearest".
+        width: Width for RBF kernel when using "rbf mode.
+    """
     n_rotations, n_reflections = signal_grid_size
 
     coeffs, R = grid[:, 0], grid[:, 1:].view(-1, 3, 3)
@@ -66,29 +121,21 @@ def grid_sample(
     # sample rotations and reflections separately
     if n_rotations:
         so3_signal = so3.grid_sample(
-            R[so3_idx],
-            so3_signal,
-            so3_signal_grid,
-            mode=rotation_mode,
-            width=rotation_width,
+            R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=width
         )
     else:
         so3_signal = so3_idx
 
     if n_reflections:
         r_signal = so3.grid_sample(
-            R[r_idx],
-            r_signal,
-            r_signal_grid,
-            mode=reflection_mode,
-            width=reflection_width,
+            R[r_idx], r_signal, r_signal_grid, mode=mode, width=width
         )
     else:
         r_signal = r_idx
 
     sampled_signal = torch.vstack((so3_signal, r_signal))
 
-    # need to restore original order of O3 grid
+    # restore original order of input  O3 grid
     perms = torch.argsort(torch.stack((so3_idx, r_idx)))
 
     return sampled_signal[perms]
