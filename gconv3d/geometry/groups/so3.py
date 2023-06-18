@@ -415,11 +415,11 @@ def left_apply_to_R3(R: Tensor, grid: Tensor) -> Tensor:
 
     Arguments:
         - R: Tensor of shape `(..., 3, 3)` of rotation matrices.
-        - grid: Tensor of shape `(x, y, z, 3)` R3 vectors.
+        - grid: Tensor of shape `(x, y, z, 3)` of R3 vectors.
 
     Returns:
         - Tensor of shape `(..., x, y, z, 3)` of transformed
-        - R3 vectors.
+          R3 vectors.
     """
     return (R[..., None, None, None, :, :] @ grid[..., None]).squeeze(-1)
 

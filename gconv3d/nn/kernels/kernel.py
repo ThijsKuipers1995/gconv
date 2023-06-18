@@ -34,6 +34,8 @@ class GroupKernel(nn.Module):
         "interpolate_H",
         "interpolate_Rn",
         "_group_kernel_dim",
+        "interpolate_H_kwargs",
+        "interpolate_Rn_kwargs",
     ]
 
     def reset_parameters(self) -> None:

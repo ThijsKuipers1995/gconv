@@ -12,7 +12,6 @@ from gconv3d.nn.kernels import GSubgroupKernel
 from torch import Tensor
 
 from gconv3d.geometry import so3
-from gconv3d.nn import functional as gF
 
 
 class GSubgroupKernelSO3(GSubgroupKernel):

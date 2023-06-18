@@ -40,9 +40,10 @@ def uniform_grid(size: tuple[int, int], matrix_only: bool = False) -> Tensor:
     return grid
 
 
-def left_apply(H1: Tensor, H2: Tensor) -> Tensor:
+def left_apply_to_O3(H1: Tensor, H2: Tensor) -> Tensor:
     """
-    Applies every element in H1 to every element in H2.
+    Implements pairwise O3 group product, applying every
+    element in H1 to every element in H2.
 
     Arguments:
         - H1: Tensor of shape `(N, 10)`.
@@ -63,6 +64,36 @@ def left_apply(H1: Tensor, H2: Tensor) -> Tensor:
     return torch.cat((coeff, R), dim=-1)
 
 
+def left_apply_to_R3(H: Tensor, grid: Tensor) -> Tensor:
+    """
+    Applies each O3 element in `H` to `grid`.
+
+    Arguments:
+        - H: Tensor of shape `(..., 10)` of O3 elements.
+        - grid: Tensor of shape `(x, y, z, 3)` of R3 vectors.
+
+    Returns:
+        - Tensor of shape `(..., x, y, z, 3)` of transformed
+          R3 vectors.
+    """
+    coeffs, R = H[..., 0].unsqueeze(-1), H[..., 1:].unflatten(-1, (3, 3))
+
+    return coeffs * (R[..., None, None, None, :, :] @ grid[..., None]).squeeze(-1)
+
+
+def det(H: Tensor) -> Tensor:
+    """
+    Returns the determinants of the given O3 elements.
+
+    Arguments:
+        - H: Tensor of shape (..., 10).
+
+    Returns:
+        Tensor of shape (..., 1) of determinants.
+    """
+    return H[..., 0].unsqueeze(-1)
+
+
 def inverse(H: Tensor) -> Tensor:
     """
     Returns the inverse of the given group elements.
@@ -73,9 +104,7 @@ def inverse(H: Tensor) -> Tensor:
     Returns:
         Tensor of shape (..., 10) of inverted elements.
     """
-    dims = H.shape[:-1]
-
-    coeffs, R = H[..., 0, None], H[..., 1:].view(*dims, 3, 3)
+    coeffs, R = H[..., 0, None], H[..., 1:].unflatten(-1, (3, 3))
     return torch.cat((coeffs, R.mT.flatten(-2, -1)), dim=-1)
 
 
@@ -85,7 +114,8 @@ def grid_sample(
     signal_grid: Tensor,
     signal_grid_size: tuple[int, int],
     mode: str = "rbf",
-    width: float = 0.5,
+    rotation_width: float = 0.5,
+    reflection_width: float = 0.5,
 ):
     """
     Samples given O3 grid based on gived reference signal and
@@ -121,14 +151,14 @@ def grid_sample(
     # sample rotations and reflections separately
     if n_rotations:
         so3_signal = so3.grid_sample(
-            R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=width
+            R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=rotation_width
         )
     else:
         so3_signal = so3_idx
 
     if n_reflections:
         r_signal = so3.grid_sample(
-            R[r_idx], r_signal, r_signal_grid, mode=mode, width=width
+            R[r_idx], r_signal, r_signal_grid, mode=mode, width=reflection_width
         )
     else:
         r_signal = r_idx
