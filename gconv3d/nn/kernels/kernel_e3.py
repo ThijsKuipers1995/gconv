@@ -10,7 +10,7 @@ from gconv3d.geometry import o3, so3
 from gconv3d.nn import functional as gF
 
 
-class GSeparableKernelO3(GSeparableKernel):
+class GSeparableKernelE3(GSeparableKernel):
     def __init__(
         self,
         in_channels: int,
