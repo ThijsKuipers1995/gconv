@@ -2,7 +2,7 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-import so3
+from . import so3
 
 
 def uniform_grid(
@@ -72,7 +72,7 @@ def left_apply_O3(H1: Tensor, H2: Tensor) -> Tensor:
     Returns:
         Tensor of shape (..., 10).
     """
-    R1 = H1[:, 1:].unflatten(-1(3, 3))
+    R1 = H1[:, 1:].unflatten(-1, (3, 3))
     R2 = H2[:, 1:].unflatten(-1, (3, 3))
 
     coeff1 = H1[:, 0].unsqueeze(-1)
