@@ -189,6 +189,7 @@ def grid_sample(
     r_signal = signal[n_rotations:]
     r_signal_grid = signal_grid[n_rotations:]
 
+    # find rotations and reflections
     so3_idx = torch.where(coeffs == 1)[0]
     r_idx = torch.where(coeffs == -1)[0]
 
