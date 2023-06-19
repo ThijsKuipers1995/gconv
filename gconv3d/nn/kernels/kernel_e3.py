@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Optional
 
 from gconv3d.nn.kernels import GLiftingKernel, GSeparableKernel
 
