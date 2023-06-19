@@ -4,4 +4,4 @@ from .gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
 
 from .normalization import *
 from .pooling import *
-from .wrap import GWrap
+from .wrappers import GWrap
