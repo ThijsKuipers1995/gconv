@@ -1,3 +1,4 @@
+from typing import Optional
 import torch.nn as nn
 
 from torch import Tensor
@@ -14,12 +15,12 @@ class GMaxSpatialPool3d(nn.MaxPool3d):
 
 
 class GMaxGroupPool(nn.Module):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
+    def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
         return x.max(dim=2)
 
 
 class GMaxGlobalPool(nn.Module):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
+    def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
         x.flatten(2, -1).max(-1, keepdim=True)
 
 
@@ -34,12 +35,12 @@ class GAvgSpatialPool3d(nn.AvgPool3d):
 
 
 class GAvgGroupPool(nn.Module):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
+    def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
         return x.mean(dim=2)
 
 
 class GAvgGlobalPool(nn.Module):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
+    def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
         x.flatten(2, -1).mean(-1, keepdim=True)
 
 

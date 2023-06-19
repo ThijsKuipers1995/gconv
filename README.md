@@ -1,30 +1,29 @@
 # 3D Group Convolutions
 
-This package implements a framework for 3D group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for SE3 convolutions, as well as basic **operations** such as pooling and normalization for $R^n \rtimes H$ input.
+This package implements a framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic **operations** such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
 
 ## Getting Started
 
-The gconv3d modules are as straightforward to use as any other regular convolution module from python, as most group related mechanisms are abstracted away. The group mechanisms such as interpolation or group actions are fully accessible and custamizable, and custom group convolution kernels and modules are easily implemented (for this, see `gconv_tutorial.ipynb`).
+The gconv3d modules are as straightforward to use as any regular Pytorch convolution module. The only difference is the output consisting of both the feature maps, as well as the group elements on which they are defined. See the example below:
 
 ```python3
-from gconv import gnn                                                               # 1
-from gconv.geometry import rotation as R                                            # 2
-import torch                                                                        # 3
-                                                                                    # 4
-x1 = torch.randn(16, 3, 28, 28, 28)                                                 # 5
-                                                                                    # 6
-lifting_layer = gnn.GConvLiftingSE3(in_channels=3, out_channels=16, kernel_size=5)  # 7
-gconv_layer = gnn.GConvSE3(in_channels=16, out_channels=32, kernel_size=5)          # 8
-                                                                                    # 9
-pool = GAvgPool()                                                                   # 10
-                                                                                    # 11
-x2, H1 = lifting_layer(x1)                                                          # 12
-x3, H2 = gconv_layer(x2, H1)                                                        # 13
-                                                                                    # 14
-y = pool_h(x3)                                                                      # 15
+import torch                                                                        # 1
+import gconv3d.nn as gnn                                                            # 2
+                                                                                    # 3
+x1 = torch.randn(16, 3, 28, 28, 28)                                                 # 4
+                                                                                    # 5
+lifting_layer = gnn.GConvLiftingSE3(in_channels=3, out_channels=16, kernel_size=5)  # 6
+gconv_layer = gnn.GConvSeparableSE3(in_channels=16, out_channels=32, kernel_size=5) # 7
+                                                                                    # 8
+pool = GAvgGlobalPool()                                                             # 9
+                                                                                    # 10
+x2, H1 = lifting_layer(x1)                                                          # 11
+x3, H2 = gconv_layer(x2, H1)                                                        # 12
+                                                                                    # 13
+y = pool(x3, H2)                                                                    # 14
 ```
 
-In line 5 we create a random batch of three-channel $R^3$ volumes. In line 12 the input defined on $R^3$ is lifted to $R^3 \rtimes \text{SO}(3) = \text{SE}(3)$.  In line 14 an $\text{SE}(3)$ convolution is performed. In line 15 the $\text{SE}(3)$ activations are reduced back to $R^3$.
+In line 5 a random batch of three-channel $\mathbb{R}^3$ volumes is created. In line 6 the $\mathbb{R}^3$ is lifted to $\text{SE}(3) = \mathbb{R}^3 \rtimes \text{SO}(3)$.  In line 7 an $\text{SE}(3)$ convolution is performed. In line 4 a global pooling is performed, resulting in $\text{SE}(3)$ invariant features.
 
 ## Requirements:
 ```
