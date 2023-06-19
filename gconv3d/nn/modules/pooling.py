@@ -3,16 +3,6 @@ import torch.nn as nn
 from torch import Tensor
 
 
-class GMaxGlobalPool2d(nn.MaxPool2d):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
-        return super().forward(x.flatten(2, 3))
-
-
-class GMaxGlobalPool3d(nn.MaxPool3d):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
-        return super().forward(x.flatten(2, 3))
-
-
 class GMaxSpatialPool2d(nn.MaxPool2d):
     def forward(self, x: Tensor, H: Tensor) -> Tensor:
         return super().forward(x.flatten(1, 2)).view(*x.shape[:3]), H
@@ -28,14 +18,9 @@ class GMaxGroupPool(nn.Module):
         return x.max(dim=2)
 
 
-class GAvgGlobalPool2d(nn.AvgPool2d):
+class GMaxGlobalPool(nn.Module):
     def forward(self, x: Tensor, _: Tensor) -> Tensor:
-        return super().forward(x.flatten(2, 3))
-
-
-class GAvgGlobalPool3d(nn.AvgPool3d):
-    def forward(self, x: Tensor, _: Tensor) -> Tensor:
-        return super().forward(x.flatten(2, 3))
+        x.flatten(2, -1).max(-1, keepdim=True)
 
 
 class GAvgSpatialPool2d(nn.AvgPool2d):
@@ -51,6 +36,11 @@ class GAvgSpatialPool3d(nn.AvgPool3d):
 class GAvgGroupPool(nn.Module):
     def forward(self, x: Tensor, _: Tensor) -> Tensor:
         return x.mean(dim=2)
+
+
+class GAvgGlobalPool(nn.Module):
+    def forward(self, x: Tensor, _: Tensor) -> Tensor:
+        x.flatten(2, -1).mean(-1, keepdim=True)
 
 
 class GAdaptiveMaxSpatialPool2d(nn.AdaptiveMaxPool2d):
