@@ -166,7 +166,8 @@ def grid_sample(
     corresponding signal grid.
 
     NOTE: It is assumed the signal and grid are ordered based on
-    rotations first, then reflections.
+    rotations first, then reflections. Order of rotations and reflections
+    in input grid does not matter.
 
     Arguments:
         grid: Tensor of shape `(N, 10)` of O3 elements.
