@@ -15,7 +15,7 @@ x1 = torch.randn(16, 3, 28, 28, 28)                                             
 lifting_layer = gnn.GConvLiftingSE3(in_channels=3, out_channels=16, kernel_size=5)  # 6
 gconv_layer = gnn.GConvSeparableSE3(in_channels=16, out_channels=32, kernel_size=5) # 7
                                                                                     # 8
-pool = GAvgGlobalPool()                                                             # 9
+pool = gnn.GAvgGlobalPool()                                                         # 9
                                                                                     # 10
 x2, H1 = lifting_layer(x1)                                                          # 11
 x3, H2 = gconv_layer(x2, H1)                                                        # 12
