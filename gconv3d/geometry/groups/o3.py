@@ -43,6 +43,47 @@ def uniform_grid(
     return grid
 
 
+def random(size: int | tuple, device: Optional[str] = None) -> Tensor:
+    """
+    Returns uniform randomly sampled O3 elements.
+
+    Arguments:
+        - size: int or tuple denoting the size.
+        - device: device on which the tensor should be generated.
+
+    Returns:
+        Tensor of shape size of random O3 elements.
+    """
+    R = so3.random_matrix(size, device=device).flatten(-2, -1)
+    coeffs = ((torch.rand(R.shape[:-2]) > 0.5) * 2) - 1
+
+    return torch.cat((coeffs, R), dim=-1)
+
+
+def left_apply_O3(H1: Tensor, H2: Tensor) -> Tensor:
+    """
+    Implements group product between H1 and H2, following
+    default broadcasting rules.
+
+    Arguments:
+        - H1: Tensor of shape `(..., 10)`.
+        - H2: Tensor of shape `(..., 10)`.
+
+    Returns:
+        Tensor of shape (..., 10).
+    """
+    R1 = H1[:, 1:].unflatten(-1(3, 3))
+    R2 = H2[:, 1:].unflatten(-1, (3, 3))
+
+    coeff1 = H1[:, 0].unsqueeze(-1)
+    coeff2 = H2[:, 0].unsqueeze(-1)
+
+    R = (R1 @ R2).flatten(-2, -1)
+    coeff = coeff1 * coeff2
+
+    return torch.cat((coeff, R), dim=-1)
+
+
 def left_apply_to_O3(H1: Tensor, H2: Tensor) -> Tensor:
     """
     Implements pairwise O3 group product, applying every

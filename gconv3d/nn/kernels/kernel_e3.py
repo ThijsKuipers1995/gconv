@@ -1,13 +1,54 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Callable, Optional
 
-from gconv3d.nn.kernels import GSeparableKernel
+from gconv3d.nn.kernels import GLiftingKernel, GSeparableKernel
 
 from torch import Tensor
 
 from gconv3d.geometry import o3, so3
 from gconv3d.nn import functional as gF
+
+
+class GLiftingKernelE3(GLiftingKernel):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        group_kernel_size: tuple | int = (4, 4),
+        groups: int = 1,
+        mode: str = "bilinear",
+        padding_mode: str = "border",
+        mask: bool = True,
+        grid_H: Optional[Tensor] = None,
+    ):
+        if isinstance(group_kernel_size, int):
+            kernel_size = (group_kernel_size, group_kernel_size)
+
+        if grid_H is None:
+            grid_H = o3.uniform_grid(group_kernel_size, "matrix")
+
+        grid_Rn = gF.create_grid_R3(kernel_size)
+
+        mask = gF.create_spherical_mask(kernel_size) if mask else None
+
+        interpolate_Rn_kwargs = {"mode": mode, padding_mode: padding_mode}
+        super().__init__(
+            in_channels,
+            out_channels,
+            kernel_size,
+            group_kernel_size,
+            grid_H,
+            grid_Rn,
+            groups,
+            mask,
+            o3.det,
+            o3.inverse,
+            o3.left_apply_to_R3,
+            gF.grid_sample,
+            interpolate_Rn_kwargs,
+        )
 
 
 class GSeparableKernelE3(GSeparableKernel):
