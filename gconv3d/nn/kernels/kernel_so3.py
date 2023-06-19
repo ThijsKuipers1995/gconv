@@ -19,19 +19,36 @@ class GSubgroupKernelSO3(GSubgroupKernel):
         self,
         in_channels: int,
         out_channels: int,
-        group_size: int,
+        group_kernel_size: int,
         groups: int = 1,
-        mode: str = "rbf",
-        width: float = 0.0,
+        sampling_mode: str = "rbf",
+        sampling_width: float = 0.0,
         grid_H: Optional[Tensor] = None,
     ) -> None:
+        """
+        Implements SO3 kernel.
 
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - group_kernel_size: int denoting the group kernel size.
+            - groups: number of groups for depth-wise separability.
+            - sampling_mode: str indicating the sampling mode. Supports rbf (default)
+                             or nearest.
+            - sampling_width: float denoting the width of the Gaussian rbf kernels.
+                              If 0.0 (default, recommended), width will be initialized
+                              based on grid_H density.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if grid_H is None:
-            grid_H = so3.uniform_grid(size=group_size)
+            grid_H = so3.uniform_grid(size=group_kernel_size)
 
-        width = width if width else 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
+        if not sampling_width:
+            sampling_width = 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
 
-        interpolate_H_kwargs = {"mode": mode, "width": width}
+        interpolate_H_kwargs = {"mode": sampling_mode, "width": sampling_width}
 
         super().__init__(
             in_channels,

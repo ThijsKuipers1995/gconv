@@ -18,11 +18,31 @@ class GLiftingKernelE3(GLiftingKernel):
         kernel_size: int,
         group_kernel_size: tuple | int = (4, 4),
         groups: int = 1,
-        mode: str = "bilinear",
-        padding_mode: str = "border",
+        sampling_mode: str = "bilinear",
+        sampling_padding_mode: str = "border",
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ):
+        """
+        Implements SE3 lifting kernel.
+
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: int denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the kernel size for (rotations, reflections).
+                                 If provided as int, given size will be used for both rotations and
+                                 reflections, i.e., the total kernel will be double.
+            - groups: number of groups for depth-wise separability.
+            - sampling_mode: str indicating the sampling mode. Supports bilinear (default)
+                                         or nearest.
+            - sampling_padding_mode: str indicating padding mode for sampling. Default
+                                             border.
+            - mask: bool if true, will initialize spherical mask.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if isinstance(group_kernel_size, int):
             kernel_size = (group_kernel_size, group_kernel_size)
 
@@ -33,7 +53,10 @@ class GLiftingKernelE3(GLiftingKernel):
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None
 
-        interpolate_Rn_kwargs = {"mode": mode, padding_mode: padding_mode}
+        interpolate_Rn_kwargs = {
+            "mode": sampling_mode,
+            "padding_mode": sampling_padding_mode,
+        }
         super().__init__(
             in_channels,
             out_channels,
@@ -59,41 +82,65 @@ class GSeparableKernelE3(GSeparableKernel):
         kernel_size: int,
         group_kernel_size: tuple[int, int],
         groups: int = 1,
-        group_mode: str = "rbf",
-        rotation_width: float = 0.0,
-        reflection_width: float = 0.0,
-        spatial_mode: str = "bilinear",
-        spatial_padding_mode: str = "border",
+        group_sampling_mode: str = "rbf",
+        rotation_sampling_width: float = 0.0,
+        reflection_sampling_width: float = 0.0,
+        spatial_sampling_mode: str = "bilinear",
+        spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ) -> None:
+        """
+        Implements SE3 lifting kernel.
 
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: int denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the kernel size for (rotations, reflections).
+                                 If provided as int, given size will be used for both rotations and
+                                 reflections, i.e., the total kernel will be double.
+            - groups: number of groups for depth-wise separability.
+            - group_sampling_mode: str indicating the sampling mode. Supports rbf (default)
+                                   or nearest.
+            - group_sampling_width: float denoting the width of the Gaussian rbf kernels.
+                                    If 0.0 (default, recommended), width will be initialized
+                                    based on grid_H density.
+            - spatial_sampling_mode: str indicating the sampling mode. Supports bilinear (default)
+                                         or nearest.
+            - spatial_sampling_padding_mode: str indicating padding mode for sampling. Default
+                                             border.
+            - mask: bool if true, will initialize spherical mask.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if grid_H is None:
             grid_H = o3.uniform_grid(sum(group_kernel_size), True)
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        if not rotation_width:
-            rotation_width = (
+        if not rotation_sampling_width:
+            rotation_sampling_width = (
                 0.8
                 * so3.nearest_neighbour_distance(grid_H[: group_kernel_size[0]]).mean()
             )
 
-        if not reflection_width:
-            reflection_width = (
+        if not reflection_sampling_width:
+            reflection_sampling_width = (
                 0.8
                 * so3.nearest_neighbour_distance(grid_H[group_kernel_size[0] :]).mean()
             )
 
         interpolate_H_kwargs = {
             "signal_grid_size": group_kernel_size,
-            "mode": group_mode,
-            "rotation_width": rotation_width,
-            "reflection_width": reflection_width,
+            "mode": group_sampling_mode,
+            "rotation_width": rotation_sampling_width,
+            "reflection_width": reflection_sampling_width,
         }
         interpolate_Rn_kwargs = {
-            "mode": spatial_mode,
-            "padding_mode": spatial_padding_mode,
+            "mode": spatial_sampling_mode,
+            "padding_mode": spatial_sampling_padding_mode,
         }
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None

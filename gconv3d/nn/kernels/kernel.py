@@ -60,6 +60,34 @@ class GroupKernel(nn.Module):
         interpolate_H_kwargs: dict = {},
         interpolate_Rn_kwargs: dict = {},
     ) -> None:
+        """
+        The group kernel manages the group and sampling of weights.
+
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: tuple where each element denotes the size of the
+                                 corresponding subgroup weight.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - grid_H: tensor containing the reference grid of group elements.
+            - grid_Rn: tensor containing the reference spatial grid.
+            - mask: tensor containing a mask to be applied to spatial kernels if provided.
+            - det_H: callable that returns the determinant of the given group elements.
+            - inverse_H: callable that returns the inverse of the given group elements.
+            - left_apply_to_H: callable that implements the pairwise group action of H
+                               given two grids of group elements.
+            - left_apply_to_Rn: callable that implements the group product of on Rn
+                                given a grid of group elements and a grid of Rn vectors.
+            - interpolate_H: callable that interpolates the weights for a given grid of
+                             group elements, the weights, and the reference grid_H.
+            - interpolate_Rn: callable that interpolates the weights for a given grids
+                              of Rn reference grids transformed by H.
+            - interpolate_H_kwargs: dict containing keyword arguments to be passed to
+                                    interpolate_H.
+            - interpolate_Rn_kwargs: dict containing keyword arguments to be passed to
+                                     interpolate_Rn.
+        """
         super().__init__()
 
         self.in_channels = in_channels
@@ -103,6 +131,10 @@ class GLiftingKernel(GroupKernel):
         interpolate_Rn: Callable | None = None,
         interpolate_Rn_kwargs: dict = {},
     ) -> None:
+        """
+        The lifting kernel manages the group and weights for
+        lifting an Rn input to Rn x H input.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -175,6 +207,11 @@ class GSeparableKernel(GroupKernel):
         interpolate_H_kwargs: dict = {},
         interpolate_Rn_kwargs: dict = {},
     ) -> None:
+        """
+        The separable kernel manages the group and weights for
+        separable group convolutions, returning weights for
+        subgroup H and Rn separately.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -275,6 +312,10 @@ class GSubgroupKernel(GroupKernel):
         interpolate_H: Callable | None = None,
         interpolate_H_kwargs: dict = {},
     ) -> None:
+        """
+        The subgroup kernel manages the group and weights for
+        convolutions applied only to the subgroup H.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -348,6 +389,9 @@ class GKernel(GroupKernel):
         interpolate_H_kwargs: dict = {},
         interpolate_Rn_kwargs: dict = {},
     ) -> None:
+        """
+        Manages the group and weights for the full group convolution.
+        """
         super().__init__(
             in_channels,
             out_channels,
