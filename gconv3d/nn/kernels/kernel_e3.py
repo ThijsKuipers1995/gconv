@@ -83,8 +83,8 @@ class GSeparableKernelE3(GSeparableKernel):
         group_kernel_size: tuple[int, int],
         groups: int = 1,
         group_sampling_mode: str = "rbf",
-        rotation_sampling_width: float = 0.0,
-        reflection_sampling_width: float = 0.0,
+        group_rotation_sampling_width: float = 0.0,
+        group_reflection_sampling_width: float = 0.0,
         spatial_sampling_mode: str = "bilinear",
         spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
@@ -135,8 +135,8 @@ class GSeparableKernelE3(GSeparableKernel):
         sample_H_kwargs = {
             "signal_grid_size": group_kernel_size,
             "mode": group_sampling_mode,
-            "rotation_width": rotation_sampling_width,
-            "reflection_width": reflection_sampling_width,
+            "rotation_width": group_rotation_sampling_width,
+            "reflection_width": group_reflection_sampling_width,
         }
         sample_Rn_kwargs = {
             "mode": spatial_sampling_mode,
