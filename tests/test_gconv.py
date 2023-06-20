@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("..")
+
 import torch
 
 from gconv.nn import GLiftingConvSE3, GSeparableConvSE3, GConvSE3
