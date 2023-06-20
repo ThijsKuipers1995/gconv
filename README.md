@@ -30,12 +30,4 @@ In line 5 a random batch of three-channel $\mathbb{R}^3$ volumes is created. In 
 python >= 3.10
 pytorch
 numpy
-matplotlib
-plotly
-```
-For running the training scripts:
-```
-medmnist
-deeprank
-wandb
 ```
