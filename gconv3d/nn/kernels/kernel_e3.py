@@ -53,7 +53,7 @@ class GLiftingKernelE3(GLiftingKernel):
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None
 
-        interpolate_Rn_kwargs = {
+        sample_Rn_kwargs = {
             "mode": sampling_mode,
             "padding_mode": sampling_padding_mode,
         }
@@ -70,7 +70,7 @@ class GLiftingKernelE3(GLiftingKernel):
             o3.inverse,
             o3.left_apply_to_R3,
             gF.grid_sample,
-            interpolate_Rn_kwargs,
+            sample_Rn_kwargs,
         )
 
 
@@ -132,13 +132,13 @@ class GSeparableKernelE3(GSeparableKernel):
                 * so3.nearest_neighbour_distance(grid_H[group_kernel_size[0] :]).mean()
             )
 
-        interpolate_H_kwargs = {
+        sample_H_kwargs = {
             "signal_grid_size": group_kernel_size,
             "mode": group_sampling_mode,
             "rotation_width": rotation_sampling_width,
             "reflection_width": reflection_sampling_width,
         }
-        interpolate_Rn_kwargs = {
+        sample_Rn_kwargs = {
             "mode": spatial_sampling_mode,
             "padding_mode": spatial_sampling_padding_mode,
         }
@@ -160,6 +160,6 @@ class GSeparableKernelE3(GSeparableKernel):
             o3.left_apply_to_R3,
             o3.grid_sample,
             gF.grid_sample,
-            interpolate_H_kwargs,
-            interpolate_Rn_kwargs,
+            sample_H_kwargs,
+            sample_Rn_kwargs,
         )

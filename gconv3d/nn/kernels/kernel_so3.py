@@ -48,7 +48,7 @@ class GSubgroupKernelSO3(GSubgroupKernel):
         if not sampling_width:
             sampling_width = 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
 
-        interpolate_H_kwargs = {"mode": sampling_mode, "width": sampling_width}
+        sample_H_kwargs = {"mode": sampling_mode, "width": sampling_width}
 
         super().__init__(
             in_channels,
@@ -59,6 +59,6 @@ class GSubgroupKernelSO3(GSubgroupKernel):
             groups,
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
-            interpolate_H=so3.grid_sample,
-            interpolate_H_kwargs=interpolate_H_kwargs,
+            sample_H=so3.grid_sample,
+            sample_H_kwargs=sample_H_kwargs,
         )

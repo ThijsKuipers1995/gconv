@@ -54,7 +54,7 @@ class GLiftingKernelSE3(GLiftingKernel):
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None
 
-        interpolate_Rn_kwargs = {
+        sample_Rn_kwargs = {
             "mode": sampling_mode,
             "padding_mode": sampling_padding_mode,
         }
@@ -70,8 +70,8 @@ class GLiftingKernelSE3(GLiftingKernel):
             mask=mask,
             inverse_H=so3.matrix_inverse,
             left_apply_to_Rn=so3.left_apply_to_R3,
-            interpolate_Rn=gF.grid_sample,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_Rn=gF.grid_sample,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )
 
 
@@ -84,9 +84,9 @@ class GSeparableKernelSE3(GSeparableKernel):
         group_kernel_size: int,
         groups: int = 1,
         group_sampling_mode: str = "rbf",
-        group_sampling_mode_width: float = 0.0,
+        group_sampling_width: float = 0.0,
         spatial_sampling_mode: str = "bilinear",
-        spatial_samplng_padding_mode: str = "border",
+        spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ) -> None:
@@ -118,18 +118,16 @@ class GSeparableKernelSE3(GSeparableKernel):
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        if not group_sampling_mode_width:
-            group_sampling_mode_width = (
-                0.8 * so3.nearest_neighbour_distance(grid_H).mean()
-            )
+        if not group_sampling_width:
+            group_sampling_width = 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
 
-        interpolate_H_kwargs = {
+        sample_H_kwargs = {
             "mode": group_sampling_mode,
-            "width": group_sampling_mode_width,
+            "width": group_sampling_width,
         }
-        interpolate_Rn_kwargs = {
+        sample_Rn_kwargs = {
             "mode": spatial_sampling_mode,
-            "padding_mode": spatial_samplng_padding_mode,
+            "padding_mode": spatial_sampling_padding_mode,
         }
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None
@@ -146,10 +144,10 @@ class GSeparableKernelSE3(GSeparableKernel):
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
             left_apply_to_Rn=so3.left_apply_to_R3,
-            interpolate_H=so3.grid_sample,
-            interpolate_Rn=gF.grid_sample,
-            interpolate_H_kwargs=interpolate_H_kwargs,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_H=so3.grid_sample,
+            sample_Rn=gF.grid_sample,
+            sample_H_kwargs=sample_H_kwargs,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )
 
 
@@ -162,9 +160,9 @@ class GKernelSE3(GKernel):
         group_kernel_size: int,
         groups: int = 1,
         group_sampling_mode: str = "rbf",
-        group_sampling_mode_width: float = 0.0,
+        group_sampling_width: float = 0.0,
         spatial_sampling_mode: str = "bilinear",
-        spatial_samplng_padding_mode: str = "border",
+        spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
         grid_H: Optional[Tensor] = None,
     ) -> None:
@@ -196,18 +194,16 @@ class GKernelSE3(GKernel):
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        if not group_sampling_mode_width:
-            group_sampling_mode_width = (
-                0.8 * so3.nearest_neighbour_distance(grid_H).mean()
-            )
+        if not group_sampling_width:
+            group_sampling_width = 0.8 * so3.nearest_neighbour_distance(grid_H).mean()
 
-        interpolate_H_kwargs = {
+        sample_H_kwargs = {
             "mode": group_sampling_mode,
-            "width": group_sampling_mode_width,
+            "width": group_sampling_width,
         }
-        interpolate_Rn_kwargs = {
+        sample_Rn_kwargs = {
             "mode": spatial_sampling_mode,
-            "padding_mode": spatial_samplng_padding_mode,
+            "padding_mode": spatial_sampling_padding_mode,
         }
 
         mask = gF.create_spherical_mask(kernel_size) if mask else None
@@ -224,8 +220,8 @@ class GKernelSE3(GKernel):
             inverse_H=so3.matrix_inverse,
             left_apply_to_H=so3.left_apply_to_matrix,
             left_apply_to_Rn=so3.left_apply_to_R3,
-            interpolate_H=so3.grid_sample,
-            interpolate_Rn=gF.grid_sample,
-            interpolate_H_kwargs=interpolate_H_kwargs,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_H=so3.grid_sample,
+            sample_Rn=gF.grid_sample,
+            sample_H_kwargs=sample_H_kwargs,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )

@@ -31,11 +31,11 @@ class GroupKernel(nn.Module):
         "inverse_H",
         "left_apply_to_H",
         "left_apply_to_Rn",
-        "interpolate_H",
-        "interpolate_Rn",
+        "sample_H",
+        "sample_Rn",
         "_group_kernel_dim",
-        "interpolate_H_kwargs",
-        "interpolate_Rn_kwargs",
+        "sample_H_kwargs",
+        "sample_Rn_kwargs",
     ]
 
     def reset_parameters(self) -> None:
@@ -55,10 +55,10 @@ class GroupKernel(nn.Module):
         inverse_H: Callable | None = None,
         left_apply_to_H: Callable | None = None,
         left_apply_to_Rn: Callable | None = None,
-        interpolate_H: Callable | None = None,
-        interpolate_Rn: Callable | None = None,
-        interpolate_H_kwargs: dict = {},
-        interpolate_Rn_kwargs: dict = {},
+        sample_H: Callable | None = None,
+        sample_Rn: Callable | None = None,
+        sample_H_kwargs: dict = {},
+        sample_Rn_kwargs: dict = {},
     ) -> None:
         """
         The group kernel manages the group and sampling of weights.
@@ -79,14 +79,14 @@ class GroupKernel(nn.Module):
                                given two grids of group elements.
             - left_apply_to_Rn: callable that implements the group product of on Rn
                                 given a grid of group elements and a grid of Rn vectors.
-            - interpolate_H: callable that interpolates the weights for a given grid of
-                             group elements, the weights, and the reference grid_H.
-            - interpolate_Rn: callable that interpolates the weights for a given grids
-                              of Rn reference grids transformed by H.
-            - interpolate_H_kwargs: dict containing keyword arguments to be passed to
-                                    interpolate_H.
-            - interpolate_Rn_kwargs: dict containing keyword arguments to be passed to
-                                     interpolate_Rn.
+            - sample_H: callable that samples the weights for a given grid of
+                        group elements, the weights, and the reference grid_H.
+            - sample_Rn: callable that samples the weights for a given grids
+                         of Rn reference grids transformed by H.
+            - sample_H_kwargs: dict containing keyword arguments to be passed to
+                               sample_H.
+            - sample_Rn_kwargs: dict containing keyword arguments to be passed to
+                                sample_Rn.
         """
         super().__init__()
 
@@ -108,10 +108,10 @@ class GroupKernel(nn.Module):
         self.inverse_H = inverse_H
         self.left_apply_to_H = left_apply_to_H
         self.left_apply_to_Rn = left_apply_to_Rn
-        self.interpolate_H = interpolate_H
-        self.interpolate_Rn = interpolate_Rn
-        self.interpolate_H_kwargs = interpolate_H_kwargs
-        self.interpolate_Rn_kwargs = interpolate_Rn_kwargs
+        self.sample_H = sample_H
+        self.sample_Rn = sample_Rn
+        self.sample_H_kwargs = sample_H_kwargs
+        self.sample_Rn_kwargs = sample_Rn_kwargs
 
 
 class GLiftingKernel(GroupKernel):
@@ -128,8 +128,8 @@ class GLiftingKernel(GroupKernel):
         det_H: Callable | None = None,
         inverse_H: Callable | None = None,
         left_apply_to_Rn: Callable | None = None,
-        interpolate_Rn: Callable | None = None,
-        interpolate_Rn_kwargs: dict = {},
+        sample_Rn: Callable | None = None,
+        sample_Rn_kwargs: dict = {},
     ) -> None:
         """
         The lifting kernel manages the group and weights for
@@ -147,8 +147,8 @@ class GLiftingKernel(GroupKernel):
             det_H=det_H,
             inverse_H=inverse_H,
             left_apply_to_Rn=left_apply_to_Rn,
-            interpolate_Rn=interpolate_Rn,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_Rn=sample_Rn,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )
 
         self.weight = torch.nn.Parameter(
@@ -170,10 +170,10 @@ class GLiftingKernel(GroupKernel):
 
         product_dims = (1,) * (H_product.ndim - 1)
 
-        weight = self.interpolate_Rn(
+        weight = self.sample_Rn(
             self.weight.repeat_interleave(H.shape[0], dim=0),
             H_product.repeat(self.out_channels, *product_dims),
-            **self.interpolate_H_kwargs,
+            **self.sample_H_kwargs,
         ).view(
             self.out_channels, num_H, self.in_channels // self.groups, *self.kernel_size
         )
@@ -202,10 +202,10 @@ class GSeparableKernel(GroupKernel):
         inverse_H: Callable | None = None,
         left_apply_to_H: Callable | None = None,
         left_apply_to_Rn: Callable | None = None,
-        interpolate_H: Callable | None = None,
-        interpolate_Rn: Callable | None = None,
-        interpolate_H_kwargs: dict = {},
-        interpolate_Rn_kwargs: dict = {},
+        sample_H: Callable | None = None,
+        sample_Rn: Callable | None = None,
+        sample_H_kwargs: dict = {},
+        sample_Rn_kwargs: dict = {},
     ) -> None:
         """
         The separable kernel manages the group and weights for
@@ -225,10 +225,10 @@ class GSeparableKernel(GroupKernel):
             inverse_H=inverse_H,
             left_apply_to_H=left_apply_to_H,
             left_apply_to_Rn=left_apply_to_Rn,
-            interpolate_H=interpolate_H,
-            interpolate_Rn=interpolate_Rn,
-            interpolate_H_kwargs=interpolate_H_kwargs,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_H=sample_H,
+            sample_Rn=sample_Rn,
+            sample_H_kwargs=sample_H_kwargs,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )
 
         self.weight_H = nn.Parameter(
@@ -257,13 +257,13 @@ class GSeparableKernel(GroupKernel):
 
         product_dims = (1,) * H_product_H.ndim
 
-        # interpolate SO3
+        # sample SO3
         weight_H = (
-            self.interpolate_H(
+            self.sample_H(
                 H_product_H.view(-1, *H_dims),
                 self.weight_H.reshape(self._group_kernel_dim, -1),
                 self.grid_H,
-                **self.interpolate_H_kwargs,
+                **self.sample_H_kwargs,
             )
             .view(
                 num_in_H,
@@ -276,11 +276,11 @@ class GSeparableKernel(GroupKernel):
             .transpose(1, 3)
         )
 
-        # interpolate R3
-        weight = self.interpolate_Rn(
+        # sample R3
+        weight = self.sample_Rn(
             self.weight.repeat_interleave(num_out_H, dim=0),
             H_product_Rn.repeat(self.out_channels, *product_dims),
-            **self.interpolate_Rn_kwargs,
+            **self.sample_Rn_kwargs,
         ).view(
             self.out_channels,
             num_out_H,
@@ -309,8 +309,8 @@ class GSubgroupKernel(GroupKernel):
         det_H: Callable | None = None,
         inverse_H: Callable | None = None,
         left_apply_to_H: Callable | None = None,
-        interpolate_H: Callable | None = None,
-        interpolate_H_kwargs: dict = {},
+        sample_H: Callable | None = None,
+        sample_H_kwargs: dict = {},
     ) -> None:
         """
         The subgroup kernel manages the group and weights for
@@ -326,8 +326,8 @@ class GSubgroupKernel(GroupKernel):
             det_H=det_H,
             inverse_H=inverse_H,
             left_apply_to_H=left_apply_to_H,
-            interpolate_H=interpolate_H,
-            interpolate_H_kwargs=interpolate_H_kwargs,
+            sample_H=sample_H,
+            sample_H_kwargs=sample_H_kwargs,
         )
 
         self.weight = nn.Parameter(
@@ -347,13 +347,13 @@ class GSubgroupKernel(GroupKernel):
 
         H_product_H = self.left_apply_to_H(out_H_inverse, in_H)
 
-        # interpolate SO3
+        # sample SO3
         weight = (
-            self.interpolate_H(
+            self.sample_H(
                 H_product_H.view(-1, *H_dims),
                 self.weight.reshape(self._group_kernel_dim, -1),
                 self.grid_H,
-                **self.interpolate_H_kwargs,
+                **self.sample_H_kwargs,
             )
             .view(
                 num_in_H,
@@ -384,10 +384,10 @@ class GKernel(GroupKernel):
         inverse_H: Callable | None = None,
         left_apply_to_H: Callable | None = None,
         left_apply_to_Rn: Callable | None = None,
-        interpolate_H: Callable | None = None,
-        interpolate_Rn: Callable | None = None,
-        interpolate_H_kwargs: dict = {},
-        interpolate_Rn_kwargs: dict = {},
+        sample_H: Callable | None = None,
+        sample_Rn: Callable | None = None,
+        sample_H_kwargs: dict = {},
+        sample_Rn_kwargs: dict = {},
     ) -> None:
         """
         Manages the group and weights for the full group convolution.
@@ -405,10 +405,10 @@ class GKernel(GroupKernel):
             inverse_H=inverse_H,
             left_apply_to_H=left_apply_to_H,
             left_apply_to_Rn=left_apply_to_Rn,
-            interpolate_H=interpolate_H,
-            interpolate_Rn=interpolate_Rn,
-            interpolate_H_kwargs=interpolate_H_kwargs,
-            interpolate_Rn_kwargs=interpolate_Rn_kwargs,
+            sample_H=sample_H,
+            sample_Rn=sample_Rn,
+            sample_H_kwargs=sample_H_kwargs,
+            sample_Rn_kwargs=sample_Rn_kwargs,
         )
 
         self.weight = nn.Parameter(
@@ -437,24 +437,24 @@ class GKernel(GroupKernel):
         H_product_H = self.left_apply_to_H(out_H_inverse, in_H)
         H_product_Rn = self.left_apply_to_Rn(out_H_inverse, self.grid_Rn)
 
-        # interpolate SO3
-        weight = self.interpolate_H(
+        # sample SO3
+        weight = self.sample_H(
             H_product_H.view(-1, *H_dims),
             self.weight.reshape(self._group_kernel_dim, -1),
             self.grid_H,
-            **self.interpolate_H_kwargs,
+            **self.sample_H_kwargs,
         ).view(
             num_out_H * num_in_H,
             (self.in_channels // self.groups) * self.out_channels,
             *self.kernel_size,
         )
 
-        # interpolate R3
+        # sample R3
         weight = (
-            self.interpolate_Rn(
+            self.sample_Rn(
                 weight,
                 H_product_Rn.repeat_interleave(num_in_H, dim=0),
-                **self.interpolate_Rn_kwargs,
+                **self.sample_Rn_kwargs,
             )
             .view(
                 num_out_H,
