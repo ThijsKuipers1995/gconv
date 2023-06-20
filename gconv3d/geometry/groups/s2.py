@@ -93,7 +93,7 @@ def uniform_grid_s2(
     with respect to the geodesic distance.
 
     Arguments:
-        - n: Number of rotations in grid.
+        - n: int denoting the number of rotations in grid.
         - parameterization: Parameterization of the returned grid elements. Must
                             be either 'spherical', 'euclidean', 'quat', 'matrix', or 'euler'. Defaults to
                             'euclidean'.
