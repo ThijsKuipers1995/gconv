@@ -24,6 +24,15 @@ from torch import Tensor
 
 from torch.nn.modules.utils import _reverse_repeat_tuple, _pair, _triple
 
+__all__ = [
+    "GConvLifting2d",
+    "GConvLifting3d",
+    "GConvSeparable2d",
+    "GConvSeparable3d",
+    "GConv2d",
+    "GConv3d",
+]
+
 
 class GroupConvNd(nn.Module):
     __constants__ = ["stride", "padding", "dilation", "padding_mode"]
