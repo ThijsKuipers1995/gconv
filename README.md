@@ -8,7 +8,7 @@ The gconv3d modules are as straightforward to use as any regular Pytorch convolu
 
 ```python3
 import torch                                                                        # 1
-import gconv3d.nn as gnn                                                            # 2
+import gconv.nn as gnn                                                              # 2
                                                                                     # 3
 x1 = torch.randn(16, 3, 28, 28, 28)                                                 # 4
                                                                                     # 5
