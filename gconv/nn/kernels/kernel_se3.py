@@ -8,12 +8,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from gconv3d.nn.kernels import GKernel, GSeparableKernel, GLiftingKernel
+from gconv.nn.kernels import GKernel, GSeparableKernel, GLiftingKernel
 
 from torch import Tensor
 
-from gconv3d.geometry import so3
-from gconv3d.nn import functional as gF
+from gconv.geometry import so3
+from gconv.nn import functional as gF
 
 
 class GLiftingKernelSE3(GLiftingKernel):

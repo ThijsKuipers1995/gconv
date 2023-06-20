@@ -7,11 +7,11 @@ from __future__ import annotations
 
 from typing import Optional
 
-from gconv3d.nn.kernels import GSubgroupKernel
+from gconv.nn.kernels import GSubgroupKernel
 
 from torch import Tensor
 
-from gconv3d.geometry import so3
+from gconv.geometry import so3
 
 
 class GSubgroupKernelSO3(GSubgroupKernel):

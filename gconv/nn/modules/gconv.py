@@ -5,7 +5,7 @@ Implements group convolution base models.
 """
 from __future__ import annotations
 
-from gconv3d.nn.kernels import (
+from gconv.nn.kernels import (
     GroupKernel,
     GLiftingKernel,
     GSeparableKernel,

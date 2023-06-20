@@ -1,8 +1,8 @@
 from typing import Optional
-from gconv3d.nn.kernels import GLiftingKernelE3, GSeparableKernelE3
-from gconv3d.nn import GLiftingConv3d, GSeparableConv3d
+from gconv.nn.kernels import GLiftingKernelE3, GSeparableKernelE3
+from gconv.nn import GLiftingConv3d, GSeparableConv3d
 
-from gconv3d.geometry import o3
+from gconv.geometry import o3
 
 from torch import Tensor
 

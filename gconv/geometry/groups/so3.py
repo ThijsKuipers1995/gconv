@@ -38,7 +38,7 @@ NOTE: The domains of the Euler and spherical parameterizations may not
 from math import pi
 from typing import Callable, Optional
 
-from gconv3d.geometry import interpolation
+from gconv.geometry import interpolation
 from . import _grid_cache
 
 import torch
