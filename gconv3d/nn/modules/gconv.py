@@ -33,7 +33,7 @@ class GroupConvNd(nn.Module):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int,
+        group_kernel_size: int | tuple,
         kernel: GroupKernel,
         groups: int = 1,
         stride: int = 1,
@@ -236,6 +236,9 @@ class GSeparableConvNd(GroupConvNd):
         conv_mode: str = "3d",
         bias: bool = False,
     ) -> None:
+        """
+        Implementation the Nd separable group convolution.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -348,7 +351,7 @@ class GLiftingConv2d(GLiftingConvNd):
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_kernel_size: int,
+        group_kernel_size: int | tuple,
         kernel: GLiftingKernel,
         groups: int = 1,
         stride: int = 1,
@@ -357,6 +360,27 @@ class GLiftingConv2d(GLiftingConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 2d lifting convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -379,7 +403,7 @@ class GSeparableConv2d(GSeparableConvNd):
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_kernel_size: int,
+        group_kernel_size: int | tuple,
         kernel: GSubgroupKernel,
         groups: int = 1,
         stride: int = 1,
@@ -388,6 +412,27 @@ class GSeparableConv2d(GSeparableConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 2d separable group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -410,7 +455,7 @@ class GConv2d(GConvNd):
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_kernel_size: int,
+        group_kernel_size: int | tuple,
         kernel: GKernel | GSubgroupKernel,
         groups: int = 1,
         stride: int = 1,
@@ -419,6 +464,27 @@ class GConv2d(GConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 2d group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -450,6 +516,27 @@ class GLiftingConv3d(GLiftingConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 3d lifting convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -481,6 +568,27 @@ class GSeparableConv3d(GSeparableConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 3d separable group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,
@@ -512,6 +620,27 @@ class GConv3d(GConvNd):
         padding_mode: str = "zeros",
         bias: bool = False,
     ) -> None:
+        """
+        Implements 3d group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - group_kernel_size: int or tuple denoting the group kernel size.
+                                    In the case of a tuple, each element denotes
+                                    a separate kernel size for each subgroup. For
+                                    example, (4, 2) could denote a O3 kernel with
+                                    rotation and reflection kernels of size 4 and
+                                    2, respectively.
+            - kernel: GroupKernel that manages the group and samples weights.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - padding_mode: str denoting the padding mode.
+            - bias: bool that if true will initialzie bias parameters.
+        """
         super().__init__(
             in_channels,
             out_channels,

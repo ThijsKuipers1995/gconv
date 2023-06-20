@@ -26,6 +26,29 @@ class GLiftingConvSE3(GLiftingConv3d):
         bias: bool = False,
         mask: bool = True,
     ) -> None:
+        """
+        Implements SE3 lifting convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - group_kernel_size: int denoting the group kernel size (default 4).
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
+                      not provided, a uniform grid will be initalizd of size group_kernel_size.
+                      If provided, group_kernel_size will be set to N.
+            - padding_mode: str denoting the padding mode.
+            - permute_output_grid: bool that if true will randomly permute output group grid
+                                   for estimating continuous groups.
+            - sampling_mode: mode used for sampling weights. Supports bilinear (default) or nearest.
+            - sampling_padding_mode: padding mode for weight sampling, border (default) is recommended.
+            - bias: bool that if true, will initialzie bias parameters.
+            - mask: bool that if true, will initialize spherical mask applied to spatial weights.
+        """
         kernel = GLiftingKernelSE3(
             in_channels,
             out_channels,
@@ -87,6 +110,36 @@ class GSeparableConvSE3(GSeparableConv3d):
         bias: bool = False,
         grid_H: Optional[Tensor] = None,
     ) -> None:
+        """
+        Implements SE3 separable group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - group_kernel_size: int denoting the group kernel size (default 4).
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
+                      not provided, a uniform grid will be initalizd of size group_kernel_size.
+                      If provided, group_kernel_size will be set to N.
+            - padding_mode: str denoting the padding mode.
+            - permute_output_grid: bool that if true will randomly permute output group grid
+                                   for estimating continuous groups.
+            - group_sampling_mode: str denoting mode used for sampling group weights. Supports
+                                   rbf (default) or nearest.
+            - group_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling.
+                                    If set to 0.0 (default, recommended), width will be initialized on
+                                    the density of grid_H.
+            - spatial_sampling_mode: str denoting mode used for sampling spatial weights. Supports
+                                     bilinear (default) or nearest.
+            - spatial_sampling_padding_mode: str denoting padding mode for spatial weight sampling,
+                                             border (default) is recommended.
+            - bias: bool that if true, will initialzie bias parameters.
+            - mask: bool that if true, will initialize spherical mask applied to spatial weights.
+        """
         kernel = GSeparableKernelSE3(
             in_channels,
             out_channels,
@@ -135,7 +188,7 @@ class GConvSE3(GConv3d):
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int,
+        group_kernel_size: int | tuple,
         groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
@@ -150,6 +203,36 @@ class GConvSE3(GConv3d):
         bias: bool = False,
         grid_H: Optional[Tensor] = None,
     ) -> None:
+        """
+        Implements SE3 separable group convolution.
+
+        Arguments:
+            - int_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: tuple denoting the spatial kernel size.
+            - groups: int denoting the number of groups for depth-wise separability.
+            - stride: int denoting the stride.
+            - padding: int or denoting padding.
+            - dilation: int denoting dilation.
+            - group_kernel_size: int denoting the group kernel size (default 4).
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
+                      not provided, a uniform grid will be initalizd of size group_kernel_size.
+                      If provided, group_kernel_size will be set to N.
+            - padding_mode: str denoting the padding mode.
+            - permute_output_grid: bool that if true will randomly permute output group grid
+                                   for estimating continuous groups.
+            - group_sampling_mode: str denoting mode used for sampling group weights. Supports
+                                   rbf (default) or nearest.
+            - group_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling.
+                                    If set to 0.0 (default, recommended), width will be initialized on
+                                    the density of grid_H.
+            - spatial_sampling_mode: str denoting mode used for sampling spatial weights. Supports
+                                     bilinear (default) or nearest.
+            - spatial_sampling_padding_mode: str denoting padding mode for spatial weight sampling,
+                                             border (default) is recommended.
+            - bias: bool that if true, will initialzie bias parameters.
+            - mask: bool that if true, will initialize spherical mask applied to spatial weights.
+        """
         kernel = GKernelSE3(
             in_channels,
             out_channels,
