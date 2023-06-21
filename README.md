@@ -25,6 +25,8 @@ y = pool(x3, H2)                                                                
 
 In line 5 a random batch of three-channel $\mathbb{R}^3$ volumes is created. In line 6 the $\mathbb{R}^3$ is lifted to $\text{SE}(3) = \mathbb{R}^3 \rtimes \text{SO}(3)$.  In line 7 an $\text{SE}(3)$ convolution is performed. In line 4 a global pooling is performed, resulting in $\text{SE}(3)$ invariant features.
 
+Further, the module contains flexible building blocks which makes it easy to implement custom group convolutions. For this, please see `gconv_tutorial.ipynb`.
+
 ## Requirements:
 ```
 python >= 3.10
