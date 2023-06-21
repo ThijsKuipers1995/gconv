@@ -46,7 +46,7 @@ class GroupConvNd(nn.Module):
         kernel: GroupKernel,
         groups: int = 1,
         stride: int = 1,
-        padding: int | str = 0,
+        padding: tuple | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",  # NOTE: I like it this way
         conv_mode: str = "3d",
@@ -190,7 +190,7 @@ class GLiftingConvNd(GroupConvNd):
         kernel: GroupKernel,
         groups: int = 1,
         stride: int = 1,
-        padding: int | str = 0,
+        padding: tuple | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",
         conv_mode: str = "3d",
@@ -221,7 +221,9 @@ class GLiftingConvNd(GroupConvNd):
             input,
             weight.reshape(-1, self.in_channels // self.groups, *self.kernel_size),
             self.groups,
-        ).view(N, self.out_channels, num_out_H, *input.shape[2:])
+        )
+
+        input = input.view(N, self.out_channels, num_out_H, *input.shape[2:])
 
         if self.bias is not None:
             input = input + self.bias
@@ -239,7 +241,7 @@ class GSeparableConvNd(GroupConvNd):
         kernel: GroupKernel,
         groups: int = 1,
         stride: int = 1,
-        padding: int | str = 0,
+        padding: tuple | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",
         conv_mode: str = "3d",
@@ -291,7 +293,9 @@ class GSeparableConvNd(GroupConvNd):
                 *self.kernel_size,
             ),
             self.out_channels * num_out_H,
-        ).view(N, self.out_channels, num_out_H, *input.shape[2:])
+        )
+
+        input = input.view(N, self.out_channels, num_out_H, *input.shape[2:])
 
         if self.bias is not None:
             input = input + self.bias
@@ -309,7 +313,7 @@ class GConvNd(GroupConvNd):
         kernel: GroupKernel,
         groups: int = 1,
         stride: int = 1,
-        padding: int | str = 0,
+        padding: tuple | str = 0,
         dilation: int = 1,
         padding_mode: str = "zeros",
         conv_mode: str = "3d",
@@ -346,7 +350,9 @@ class GConvNd(GroupConvNd):
                 *self.kernel_size,
             ),
             self.groups,
-        ).view(N, self.out_channels, num_out_H, *input.shape[3:])
+        )
+
+        input = input.view(N, self.out_channels, num_out_H, *input.shape[3:])
 
         if self.bias is not None:
             input = input + self.bias
@@ -398,7 +404,7 @@ class GLiftingConv2d(GLiftingConvNd):
             kernel,
             groups,
             _pair(stride),
-            padding,
+            _pair(padding),
             _pair(dilation),
             padding_mode,
             conv_mode="2d",
@@ -450,7 +456,7 @@ class GSeparableConv2d(GSeparableConvNd):
             kernel,
             groups,
             _pair(stride),
-            padding,
+            _pair(padding),
             _pair(dilation),
             padding_mode,
             conv_mode="2d",
@@ -502,7 +508,7 @@ class GConv2d(GConvNd):
             kernel,
             groups,
             _pair(stride),
-            padding,
+            _pair(padding),
             _pair(dilation),
             padding_mode,
             conv_mode="2d",
@@ -554,7 +560,7 @@ class GLiftingConv3d(GLiftingConvNd):
             kernel,
             groups,
             _triple(stride),
-            padding,
+            _triple(padding),
             _triple(dilation),
             padding_mode,
             conv_mode="3d",
@@ -606,7 +612,7 @@ class GSeparableConv3d(GSeparableConvNd):
             kernel,
             groups,
             _triple(stride),
-            padding,
+            _triple(padding),
             _triple(dilation),
             padding_mode,
             conv_mode="3d",
@@ -658,7 +664,7 @@ class GConv3d(GConvNd):
             kernel,
             groups,
             _triple(stride),
-            padding,
+            _triple(padding),
             _triple(dilation),
             padding_mode,
             conv_mode="3d",

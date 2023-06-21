@@ -37,7 +37,7 @@ class GMaxGlobalPool(nn.Module):
     """
 
     def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
-        x.flatten(2, -1).max(-1, keepdim=True)
+        return x.flatten(2, -1).max(-1, keepdim=True)
 
 
 class GAvgSpatialPool2d(nn.AvgPool2d):
@@ -73,7 +73,7 @@ class GAvgGlobalPool(nn.Module):
     """
 
     def forward(self, x: Tensor, _: Optional[Tensor] = None) -> Tensor:
-        x.flatten(2, -1).mean(-1, keepdim=True)
+        return x.flatten(2, -1).mean(-1, keepdim=True)
 
 
 class GAdaptiveMaxSpatialPool2d(nn.AdaptiveMaxPool2d):
