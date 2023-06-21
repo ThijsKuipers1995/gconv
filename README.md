@@ -1,10 +1,10 @@
-# 3D Group Convolutions
+# Continuous Regular Group Convolutions
 
-This package implements a framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic **operations** such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
+This package implements a framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
 
 ## Getting Started
 
-The gconv3d modules are as straightforward to use as any regular Pytorch convolution module. The only difference is the output consisting of both the feature maps, as well as the group elements on which they are defined. See the example below:
+The `gconv` modules are as straightforward to use as any regular Pytorch convolution module. The only difference is the output consisting of both the feature maps, as well as the group elements on which they are defined. See the example below:
 
 ```python3
 import torch                                                                        # 1
@@ -12,8 +12,8 @@ import gconv.nn as gnn                                                          
                                                                                     # 3
 x1 = torch.randn(16, 3, 28, 28, 28)                                                 # 4
                                                                                     # 5
-lifting_layer = gnn.GConvLiftingSE3(in_channels=3, out_channels=16, kernel_size=5)  # 6
-gconv_layer = gnn.GConvSeparableSE3(in_channels=16, out_channels=32, kernel_size=5) # 7
+lifting_layer = gnn.GLiftingConvSE3(in_channels=3, out_channels=16, kernel_size=5)  # 6
+gconv_layer = gnn.GSeparableConvSE3(in_channels=16, out_channels=32, kernel_size=5) # 7
                                                                                     # 8
 pool = gnn.GAvgGlobalPool()                                                         # 9
                                                                                     # 10
