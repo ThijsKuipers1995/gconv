@@ -23,9 +23,9 @@ x3, H2 = gconv_layer(x2, H1)                                                    
 y = pool(x3, H2)                                                                    # 14
 ```
 
-In line 5 a random batch of three-channel $\mathbb{R}^3$ volumes is created. In line 6 the $\mathbb{R}^3$ is lifted to $\text{SE}(3) = \mathbb{R}^3 \rtimes \text{SO}(3)$.  In line 7 an $\text{SE}(3)$ convolution is performed. In line 4 a global pooling is performed, resulting in $\text{SE}(3)$ invariant features.
+In line 5, a random batch of three-channel $\mathbb{R}^3$ volumes is created. In line 6, the $\mathbb{R}^3$ is lifted to $\text{SE}(3) = \mathbb{R}^3 \rtimes \text{SO}(3)$.  In line 7, an $\text{SE}(3)$ convolution is performed. In line 14, a global pooling is performed, resulting in $\text{SE}(3)$ invariant features.
 
-Further, the module contains flexible building blocks which makes it easy to implement custom group convolutions. For this, please see `gconv_tutorial.ipynb`.
+Furthermore, `gconv` offers all the necessary tools to build fully custom group convolutions. All that is required is implementing 5 (or less, depending on the type of convolution) group ops! For more details on how to implement custom group convolutions, see `gconv_tutorial.ipynb`.
 
 ## Requirements:
 ```
