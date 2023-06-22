@@ -43,7 +43,7 @@ def uniform_grid(
     return grid
 
 
-def random(size: int | tuple, device: Optional[str] = None) -> Tensor:
+def random_grid(size: int | tuple, device: Optional[str] = None) -> Tensor:
     """
     Returns uniform randomly sampled O3 elements.
 

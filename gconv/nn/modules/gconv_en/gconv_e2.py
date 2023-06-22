@@ -1,13 +1,13 @@
 from typing import Optional
+from gconv.nn.kernels import GLiftingKernelE2, GSeparableKernelE2, GKernelE2
+from gconv.nn.modules.gconv import GLiftingConv2d, GSeparableConv2d, GConv2d
+
+from gconv.geometry import o2
+
 from torch import Tensor
 
-from gconv.nn.modules.gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
-from gconv.nn.kernels import GLiftingKernelSE3, GSeparableKernelSE3, GKernelSE3
 
-from gconv.geometry import so3
-
-
-class GLiftingConvSE3(GLiftingConv3d):
+class GLiftingConvE2(GLiftingConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -17,7 +17,7 @@ class GLiftingConvSE3(GLiftingConv3d):
         stride: int = 1,
         padding: int | str = 0,
         dilation: int = 1,
-        group_kernel_size: int = 4,
+        group_kernel_size: tuple | int = (4, 4),
         grid_H: Optional[Tensor] = None,
         padding_mode: str = "zeros",
         permute_output_grid: bool = True,
@@ -27,7 +27,7 @@ class GLiftingConvSE3(GLiftingConv3d):
         mask: bool = True,
     ) -> None:
         """
-        Implements SE3 lifting convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -37,19 +37,24 @@ class GLiftingConvSE3(GLiftingConv3d):
             - stride: int denoting the stride.
             - padding: int or denoting padding.
             - dilation: int denoting dilation.
-            - group_kernel_size: int denoting the group kernel size (default 4).
+            - group_kernel_size: tuple or int denoting the group kernel size (default (4, 4)).
+                                 If tuple, (x, y) denotes the rotation and reflection subgroup
+                                 sizes, respectively. If int, size will be used for both rotation
+                                 and reflection subgroup kernels.
             - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
                       not provided, a uniform grid will be initalizd of size group_kernel_size.
                       If provided, group_kernel_size will be set to N.
             - padding_mode: str denoting the padding mode.
             - permute_output_grid: bool that if true will randomly permute output group grid
                                    for estimating continuous groups.
-            - sampling_mode: mode used for sampling weights. Supports bilinear (default) or nearest.
-            - sampling_padding_mode: padding mode for weight sampling, border (default) is recommended.
+            - spatial_sampling_mode: str denoting mode used for sampling spatial weights. Supports
+                                     bilinear (default) or nearest.
+            - spatial_sampling_padding_mode: str denoting padding mode for spatial weight sampling,
+                                             border (default) is recommended.
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GLiftingKernelSE3(
+        kernel = GLiftingKernelE2(
             in_channels,
             out_channels,
             kernel_size,
@@ -84,18 +89,18 @@ class GLiftingConvSE3(GLiftingConv3d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = so3.left_apply_matrix(so3.random_matrix(1, device=input.device), H)
+            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)
 
 
-class GSeparableConvSE3(GSeparableConv3d):
+class GSeparableConvE3(GSeparableConv2d):
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int = 4,
+        group_kernel_size: int,
         groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
@@ -103,7 +108,8 @@ class GSeparableConvSE3(GSeparableConv3d):
         padding_mode: str = "zeros",
         permute_output_grid: bool = True,
         group_sampling_mode: str = "rbf",
-        group_sampling_width: float = 0.0,
+        group_rotation_sampling_width: float = 0.0,
+        group_reflection_sampling_width: float = 0.0,
         spatial_sampling_mode: str = "bilinear",
         spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
@@ -111,7 +117,7 @@ class GSeparableConvSE3(GSeparableConv3d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE3 separable group convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -130,9 +136,12 @@ class GSeparableConvSE3(GSeparableConv3d):
                                    for estimating continuous groups.
             - group_sampling_mode: str denoting mode used for sampling group weights. Supports
                                    rbf (default) or nearest.
-            - group_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling.
-                                    If set to 0.0 (default, recommended), width will be initialized on
-                                    the density of grid_H.
+            - group_rotation_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling
+                                             for rotation subgroup kernel. If set to 0.0 (default, recommended),
+                                             width will be initialized on the density of grid_H.
+            - group_reflection_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling
+                                               for reflection subgroup kernel. If set to 0.0 (default, recommended),
+                                               width will be initialized on the density of grid_H.
             - spatial_sampling_mode: str denoting mode used for sampling spatial weights. Supports
                                      bilinear (default) or nearest.
             - spatial_sampling_padding_mode: str denoting padding mode for spatial weight sampling,
@@ -140,14 +149,15 @@ class GSeparableConvSE3(GSeparableConv3d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GSeparableKernelSE3(
+        kernel = GSeparableKernelE2(
             in_channels,
             out_channels,
             kernel_size,
             group_kernel_size,
             groups=groups,
-            group_sampling_mode=group_sampling_mode,
-            group_sampling_width=group_sampling_width,
+            group_mode=group_sampling_mode,
+            group_rotation_sampling_width=group_rotation_sampling_width,
+            group_reflection_sampling_width=group_reflection_sampling_width,
             spatial_sampling_mode=spatial_sampling_mode,
             spatial_sampling_padding_mode=spatial_sampling_padding_mode,
             mask=mask,
@@ -171,26 +181,24 @@ class GSeparableConvSE3(GSeparableConv3d):
         )
 
     def forward(
-        self, input: Tensor, in_H: Tensor, out_H: Optional[Tensor] = None
+        self, input: Tensor, H: Optional[Tensor] = None
     ) -> tuple[Tensor, Tensor]:
-        if out_H is None:
-            out_H = in_H
+        if H is None:
+            H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            out_H = so3.left_apply_matrix(
-                so3.random_matrix(1, device=input.device), out_H
-            )
+            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
 
-        return super().forward(input, in_H, out_H)
+        return super().forward(input, H)
 
 
-class GConvSE3(GConv3d):
+class GConvE3(GConv2d):
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         kernel_size: tuple,
-        group_kernel_size: int | tuple = 4,
+        group_kernel_size: int,
         groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
@@ -198,7 +206,8 @@ class GConvSE3(GConv3d):
         padding_mode: str = "zeros",
         permute_output_grid: bool = True,
         group_sampling_mode: str = "rbf",
-        group_sampling_width: float = 0.0,
+        group_rotation_sampling_width: float = 0.0,
+        group_reflection_sampling_width: float = 0.0,
         spatial_sampling_mode: str = "bilinear",
         spatial_sampling_padding_mode: str = "border",
         mask: bool = True,
@@ -206,7 +215,7 @@ class GConvSE3(GConv3d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE3 separable group convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -225,9 +234,12 @@ class GConvSE3(GConv3d):
                                    for estimating continuous groups.
             - group_sampling_mode: str denoting mode used for sampling group weights. Supports
                                    rbf (default) or nearest.
-            - group_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling.
-                                    If set to 0.0 (default, recommended), width will be initialized on
-                                    the density of grid_H.
+            - group_rotation_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling
+                                             for rotation subgroup kernel. If set to 0.0 (default, recommended),
+                                             width will be initialized on the density of grid_H.
+            - group_reflection_sampling_width: float denoting width of Gaussian rbf kernel when using rbf sampling
+                                               for reflection subgroup kernel. If set to 0.0 (default, recommended),
+                                               width will be initialized on the density of grid_H.
             - spatial_sampling_mode: str denoting mode used for sampling spatial weights. Supports
                                      bilinear (default) or nearest.
             - spatial_sampling_padding_mode: str denoting padding mode for spatial weight sampling,
@@ -235,14 +247,15 @@ class GConvSE3(GConv3d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GKernelSE3(
+        kernel = GKernelE2(
             in_channels,
             out_channels,
-            kernel_size=kernel_size,
-            group_kernel_size=group_kernel_size,
+            kernel_size,
+            group_kernel_size,
             groups=groups,
-            group_sampling_mode=group_sampling_mode,
-            group_sampling_width=group_sampling_width,
+            group_mode=group_sampling_mode,
+            group_rotation_sampling_width=group_rotation_sampling_width,
+            group_reflection_sampling_width=group_reflection_sampling_width,
             spatial_sampling_mode=spatial_sampling_mode,
             spatial_sampling_padding_mode=spatial_sampling_padding_mode,
             mask=mask,
@@ -266,14 +279,12 @@ class GConvSE3(GConv3d):
         )
 
     def forward(
-        self, input: Tensor, in_H: Tensor, out_H: Optional[Tensor] = None
+        self, input: Tensor, H: Optional[Tensor] = None
     ) -> tuple[Tensor, Tensor]:
-        if out_H is None:
-            out_H = in_H
+        if H is None:
+            H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            out_H = so3.left_apply_matrix(
-                so3.random_matrix(1, device=input.device), out_H
-            )
+            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
 
-        return super().forward(input, in_H, out_H)
+        return super().forward(input, H)

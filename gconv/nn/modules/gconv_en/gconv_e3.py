@@ -89,7 +89,7 @@ class GLiftingConvE3(GLiftingConv3d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o3.left_apply_O3(o3.random(1), H)
+            H = o3.left_apply_O3(o3.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)
 
@@ -187,7 +187,7 @@ class GSeparableConvE3(GSeparableConv3d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o3.left_apply_O3(o3.random(1), H)
+            H = o3.left_apply_O3(o3.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)
 
@@ -285,6 +285,6 @@ class GConvE3(GConv3d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o3.left_apply_O3(o3.random(1), H)
+            H = o3.left_apply_O3(o3.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)

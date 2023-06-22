@@ -84,7 +84,7 @@ class GLiftingConvSE2(GLiftingConv2d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = so2.left_apply_angle(so2.random_grid(1), H)
+            H = so2.left_apply_angle(so2.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)
 
@@ -177,7 +177,7 @@ class GSeparableConvSE2(GSeparableConv2d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = so2.left_apply_angle(so2.random_grid(1), out_H)
+            out_H = so2.left_apply_angle(so2.random_grid(1, device=input.device), out_H)
 
         return super().forward(input, in_H, out_H)
 
@@ -270,6 +270,6 @@ class GConvSE2(GConv2d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = so2.left_apply_angle(so2.random_grid(1), out_H)
+            out_H = so2.left_apply_angle(so2.random_grid(1, device=input.device), out_H)
 
         return super().forward(input, in_H, out_H)

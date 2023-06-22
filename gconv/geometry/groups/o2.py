@@ -37,6 +37,37 @@ def uniform_grid(size: tuple[int, int], device: str | None = None) -> Tensor:
     return torch.cat((coeffs, angles), dim=-1)
 
 
+def random_grid(size: tuple[int, int], device: str | None = None) -> Tensor:
+    """
+    Returns a uniform grid of O2 elements where the rotations and
+    reflections are both uniform SO2 grids. O2 elements are represented
+    using a 2D vector where the first element denotes the reflection
+    coefficient (1 or -1) and the second element denotes the rotation angle
+    in the range `[0, 2pi)`.
+
+    Arguments:
+        - size: int denoting the number of elements in the grid.
+        - device: optional str denoting the device.
+
+    Returns:
+        Tensor of shape (sum(size), 2).
+    """
+    angles = torch.cat(
+        (
+            so2.random_grid(size[0], device=device),
+            so2.random_grid(size[1], device=device),
+        ),
+        dim=0,
+    )
+
+    coeffs = torch.cat(
+        (torch.ones(size[0], 1, device=device), -torch.ones(size[1], 1, device=device)),
+        dim=0,
+    )
+
+    return torch.cat((coeffs, angles), dim=-1)
+
+
 def inverse(R: Tensor) -> Tensor:
     """
     Returns the inverse reflection elements.
@@ -66,7 +97,7 @@ def det(R: Tensor) -> Tensor:
     return R[..., 0].view(*dims, 1)
 
 
-def left_apply_o3(R1: Tensor, R2: Tensor) -> Tensor:
+def left_apply_angle(R1: Tensor, R2: Tensor) -> Tensor:
     """
     Returns the left group action of R1 applied to R2.
 
@@ -83,7 +114,7 @@ def left_apply_o3(R1: Tensor, R2: Tensor) -> Tensor:
     return torch.stack((coeffs, angles), dim=-1)
 
 
-def left_apply_to_o3(R1: Tensor, R2: Tensor) -> Tensor:
+def left_apply_to_angle(R1: Tensor, R2: Tensor) -> Tensor:
     """
     Applies the left group action of each element in R1 to
     each element in R2.
