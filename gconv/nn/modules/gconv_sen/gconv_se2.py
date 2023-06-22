@@ -1,7 +1,7 @@
 from typing import Optional
 from torch import Tensor
 
-from .gconv import GLiftingConv2d, GSeparableConv2d, GConv2d
+from gconv.nn import GLiftingConv2d, GSeparableConv2d, GConv2d
 from gconv.nn.kernels import GLiftingKernelSE2, GSeparableKernelSE2, GKernelSE2
 
 from gconv.geometry import so2
