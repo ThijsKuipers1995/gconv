@@ -72,11 +72,11 @@ def left_apply_O3(H1: Tensor, H2: Tensor) -> Tensor:
     Returns:
         Tensor of shape (..., 10).
     """
-    R1 = H1[:, 1:].unflatten(-1, (3, 3))
-    R2 = H2[:, 1:].unflatten(-1, (3, 3))
+    R1 = H1[..., 1:].unflatten(-1, (3, 3))
+    R2 = H2[..., 1:].unflatten(-1, (3, 3))
 
-    coeff1 = H1[:, 0].unsqueeze(-1)
-    coeff2 = H2[:, 0].unsqueeze(-1)
+    coeff1 = H1[..., 0].unsqueeze(-1)
+    coeff2 = H2[..., 0].unsqueeze(-1)
 
     R = (R1 @ R2).flatten(-2, -1)
     coeff = coeff1 * coeff2
@@ -120,8 +120,7 @@ def left_apply_to_R3(H: Tensor, grid: Tensor) -> Tensor:
         - Tensor of shape `(..., x, y, z, 3)` of transformed
           R3 vectors.
     """
-    coeffs, R = H[..., 0].unsqueeze(-1), H[..., 1:].unflatten(-1, (3, 3))
-
+    coeffs, R = H[..., 0][..., None, None, None, None], H[..., 1:].unflatten(-1, (3, 3))
     return coeffs * (R[..., None, None, None, :, :] @ grid[..., None]).squeeze(-1)
 
 
@@ -172,7 +171,7 @@ def grid_sample(
     Arguments:
         grid: Tensor of shape `(N, 10)` of O3 elements.
         signal: Tensor of shape `(M, S)`.
-        signal_grid: Tensor of shape `(M, 3, 3)` of corresponding
+        signal_grid: Tensor of shape `(M, 10)` of corresponding
                      rotation elements.
         signal_grid_size: Tuple of `(n_rotations, n_reflections)`
                           where n_rotations + n_reflections = M.
@@ -185,10 +184,10 @@ def grid_sample(
     coeffs, R = grid[:, 0], grid[:, 1:].view(-1, 3, 3)
 
     so3_signal = signal[:n_rotations]
-    so3_signal_grid = signal_grid[:n_rotations]
+    so3_signal_grid = signal_grid[:n_rotations, 1:].view(-1, 3, 3)
 
     r_signal = signal[n_rotations:]
-    r_signal_grid = signal_grid[n_rotations:]
+    r_signal_grid = signal_grid[n_rotations:, 1:].view(-1, 3, 3)
 
     # find rotations and reflections
     so3_idx = torch.where(coeffs == 1)[0]

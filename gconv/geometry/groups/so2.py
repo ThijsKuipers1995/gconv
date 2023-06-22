@@ -16,7 +16,7 @@ def angle_to_matrix(R: Tensor) -> Tensor:
     Returns:
         Tensor of shape `(..., 2, 2)`.
     """
-    matrices = R.new_empty(R.shape[:-1], 2, 2)
+    matrices = R.new_empty((*R.shape[:-1], 2, 2))
 
     cos_H = torch.cos(R).flatten(-2)
     sin_H = torch.sin(R).flatten(-2)
@@ -39,10 +39,10 @@ def angle_to_euclid(R: Tensor) -> Tensor:
     Returns:
         Tensor of shape `(..., 2)`.
     """
-    vec = R.new_empty(R.shape[:-1], 2)
+    vec = R.new_empty((*R.shape[:-1], 2))
 
-    vec[..., 0] = torch.cos(R).flatten(-2)
-    vec[..., 1] = torch.cos(R).flatten(-2)
+    vec[..., 0] = torch.cos(R).squeeze(-1)
+    vec[..., 1] = torch.cos(R).squeeze(-1)
 
     return vec
 
@@ -188,7 +188,7 @@ def geodesic_distance(R1: Tensor, R2: Tensor, eps: float = 1e-7) -> Tensor:
     Returns:
         Tensor containing the geodesic distance between R1 and R2.
     """
-    return geodesic_distance(angle_to_euclid(R1), angle_to_euclid(R2), eps=eps)
+    return geodesic_distance_euclid(angle_to_euclid(R1), angle_to_euclid(R2), eps=eps)
 
 
 def grid_sample(

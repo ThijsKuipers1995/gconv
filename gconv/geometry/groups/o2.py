@@ -47,6 +47,7 @@ def inverse(R: Tensor) -> Tensor:
     Returns:
         Tensor of shape (..., 2) of inverse O2.
     """
+    R = R.clone()
     R[..., 1] *= -1
     return R
 
@@ -61,7 +62,8 @@ def det(R: Tensor) -> Tensor:
     Returns:
         Tensor of shape (..., 1)
     """
-    return R[..., 0].unflatten(-1, (1, 1))
+    dims = R.shape[:-1]
+    return R[..., 0].view(*dims, 1)
 
 
 def left_apply_o3(R1: Tensor, R2: Tensor) -> Tensor:
@@ -113,7 +115,9 @@ def left_apply_to_R2(R: Tensor, grid: Tensor) -> Tensor:
     """
     coeffs, angles = R[:, 0], R[:, 1]
 
-    return coeffs.view(-1, 1, 1, 1) * so2.left_apply_angle_to_R2(angles.view(-1, 1))
+    return coeffs.view(-1, 1, 1, 1) * so2.left_apply_angle_to_R2(
+        angles.view(-1, 1), grid
+    )
 
 
 def grid_sample(
@@ -125,15 +129,34 @@ def grid_sample(
     rotation_width: float = 0.5,
     reflection_width: float = 0.5,
 ) -> Tensor:
+    """
+    Samples given O3 grid based on gived reference signal and
+    corresponding signal grid.
+
+    NOTE: It is assumed the signal and grid are ordered based on
+    rotations first, then reflections. Order of rotations and reflections
+    in input grid does not matter.
+
+    Arguments:
+        grid: Tensor of shape `(N, 10)` of O3 elements.
+        signal: Tensor of shape `(M, S)`.
+        signal_grid: Tensor of shape `(M, 3, 3)` of corresponding
+                     rotation elements.
+        signal_grid_size: Tuple of `(n_rotations, n_reflections)`
+                          where n_rotations + n_reflections = M.
+        mode: Interpolation mode used, supports "rbf" (default) and
+              "nearest".
+        width: Width for RBF kernel when using "rbf mode.
+    """
     n_rotations, n_reflections = signal_grid_size
 
     coeffs, R = grid[:, 0], grid[:, 1].view(-1, 1)
 
     so2_signal = signal[:n_rotations]
-    so2_signal_grid = signal_grid[:n_rotations]
+    so2_signal_grid = signal_grid[:n_rotations, 1].unsqueeze(-1)
 
     r_signal = signal[n_rotations:]
-    r_signal_grid = signal_grid[n_rotations:]
+    r_signal_grid = signal_grid[n_rotations:, 1].unsqueeze(-1)
 
     # find rotations and reflections
     so2_idx = torch.where(coeffs == 1)[0]

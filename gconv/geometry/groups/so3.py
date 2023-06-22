@@ -571,15 +571,12 @@ def uniform_grid(
     Returns:
         - Tensor containing uniform grid on SO3.
     """
+    if size == 0:
+        return torch.Tensor([], device=device)
     try:
         return _grid_cache.load_grid(size, "so3", parameterization)
     except KeyError:
-        grid = uniform_grid(
-            size, steps=steps, device=device, parameterization=parameterization
-        )
-
-        if cache_grid:
-            _grid_cache.save_grid(grid, "so3", parameterization)
+        pass
 
     parameterization = parameterization.lower()
     if parameterization == "quat":
@@ -606,6 +603,9 @@ def uniform_grid(
         show_pbar=show_pbar,
         in_place=True,
     )
+
+    if cache_grid:
+        _grid_cache.save_grid(grid, "so3", parameterization)
 
     return param_fn(grid)
 

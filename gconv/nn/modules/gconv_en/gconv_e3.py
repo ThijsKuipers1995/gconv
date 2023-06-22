@@ -1,6 +1,6 @@
 from typing import Optional
 from gconv.nn.kernels import GLiftingKernelE3, GSeparableKernelE3, GKernelE3
-from gconv.nn import GLiftingConv3d, GSeparableConv3d, GConv3d
+from gconv.nn.modules.gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
 
 from gconv.geometry import o3
 

@@ -47,7 +47,7 @@ class GLiftingKernelE3(GLiftingKernel):
             kernel_size = (group_kernel_size, group_kernel_size)
 
         if grid_H is None:
-            grid_H = o3.uniform_grid(group_kernel_size, "matrix")
+            grid_H = o3.uniform_grid(group_kernel_size)
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -116,7 +116,7 @@ class GSeparableKernelE3(GSeparableKernel):
                       generated. If provided, will overwrite given group_kernel_size.
         """
         if grid_H is None:
-            grid_H = o3.uniform_grid(sum(group_kernel_size), True)
+            grid_H = o3.uniform_grid(group_kernel_size)
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
@@ -207,7 +207,7 @@ class GKernelE3(GKernel):
                       generated. If provided, will overwrite given group_kernel_size.
         """
         if grid_H is None:
-            grid_H = o3.uniform_grid(sum(group_kernel_size), True)
+            grid_H = o3.uniform_grid(group_kernel_size)
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
