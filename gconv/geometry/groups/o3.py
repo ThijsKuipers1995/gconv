@@ -29,14 +29,14 @@ def uniform_grid(
 
     R1 = so3.uniform_grid(n_rotations, "matrix", device=device)
     R2 = so3.uniform_grid(n_reflections, "matrix", device=device)
-    R = torch.vstack((R1, R2))
+    R = torch.cat((R1, R2), dim=-0)
 
     if matrix_only:
         return R
 
     coeff1 = torch.ones(n_rotations, 1, device=device)
     coeff2 = -1 * torch.ones(n_reflections, 1, device=device)
-    coeffs = torch.vstack((coeff1, coeff2))
+    coeffs = torch.cat((coeff1, coeff2), dim=0)
 
     grid = torch.cat((coeffs, R.flatten(-2, -1)), dim=-1)
 
@@ -199,19 +199,15 @@ def grid_sample(
         so3_signal = so3.grid_sample(
             R[so3_idx], so3_signal, so3_signal_grid, mode=mode, width=rotation_width
         )
-    else:
-        so3_signal = so3_idx
 
     if n_reflections:
         r_signal = so3.grid_sample(
             R[r_idx], r_signal, r_signal_grid, mode=mode, width=reflection_width
         )
-    else:
-        r_signal = r_idx
 
-    sampled_signal = torch.vstack((so3_signal, r_signal))
+    sampled_signal = torch.cat((so3_signal, r_signal), dim=0)
 
     # restore original order of input  O3 grid
-    perms = torch.argsort(torch.stack((so3_idx, r_idx)))
+    perms = torch.argsort(torch.cat((so3_idx, r_idx)), dim=0)
 
     return sampled_signal[perms]

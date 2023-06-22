@@ -54,6 +54,9 @@ def uniform_grid(size: int, device: str | None = None) -> Tensor:
     Arguments:
         - size: int denoting the number of elements in the grid.
         - device: optional str denoting the device.
+
+    Returns:
+        Tensor of shape (size, 1)
     """
     return torch.linspace(0, 2 * math.pi, size + 1, device=device)[:-1].view(-1, 1)
 
@@ -65,6 +68,9 @@ def random_grid(size: int, device: str | None = None) -> Tensor:
     Arguments:
         - size: int denoting the number of elements in the grid.
         - device: optional str denoting the device.
+
+    Returns:
+        Tensor of shape (size, 1)
     """
     return 2 * math.pi * torch.rand(size, device=device).view(-1, 1)
 
