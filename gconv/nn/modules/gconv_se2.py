@@ -7,7 +7,7 @@ from gconv.nn.kernels import GLiftingKernelSE2, GSeparableKernelSE2, GKernelSE2
 from gconv.geometry import so2
 
 
-class GLiftingConvSE3(GLiftingConv2d):
+class GLiftingConvSE2(GLiftingConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -89,7 +89,7 @@ class GLiftingConvSE3(GLiftingConv2d):
         return super().forward(input, H)
 
 
-class GSeparableConvSE3(GSeparableConv2d):
+class GSeparableConvSE2(GSeparableConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -111,7 +111,7 @@ class GSeparableConvSE3(GSeparableConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE3 separable group convolution.
+        Implements SE2 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -182,7 +182,7 @@ class GSeparableConvSE3(GSeparableConv2d):
         return super().forward(input, in_H, out_H)
 
 
-class GConvSE3(GConv2d):
+class GConvSE2(GConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -204,7 +204,7 @@ class GConvSE3(GConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE3 separable group convolution.
+        Implements SE2 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
