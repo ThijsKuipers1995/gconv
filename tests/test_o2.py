@@ -35,17 +35,17 @@ def test_det():
 def test_left_apply_o2():
     grid = o2.uniform_grid((4, 4))
 
-    prod = o2.left_apply_o3(grid, grid)
+    prod = o2.left_apply_angle(grid, grid)
     assert prod.shape == (8, 2)
 
-    prod = o2.left_apply_o3(grid[:, None], grid)
+    prod = o2.left_apply_angle(grid[:, None], grid)
     assert prod.shape == (8, 8, 2)
 
 
 def test_left_apply_to_o2():
     grid = o2.uniform_grid((4, 4))
 
-    prod = o2.left_apply_to_o3(grid, grid)
+    prod = o2.left_apply_to_angle(grid, grid)
     assert prod.shape == (8, 8, 2)
 
 
