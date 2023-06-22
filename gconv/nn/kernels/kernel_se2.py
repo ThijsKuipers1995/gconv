@@ -19,7 +19,24 @@ class GLiftingKernelSE2(GLiftingKernel):
         mask: bool = True,
         grid_H: Tensor | None = None,
     ) -> None:
+        """
+        Implements SE2 lifting kernel.
 
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: int denoting the spatial kernel size.
+            - group_kernel_size: int denoting the group kernel size.
+            - groups: number of groups for depth-wise separability.
+            - sampling_mode: str indicating the sampling mode. Supports bilinear (default)
+                             or nearest.
+            - sampling_padding_mode: str indicating padding mode for sampling. Default
+                                     border.
+            - mask: bool if true, will initialize spherical mask.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if grid_H is None:
             grid_H = so2.uniform_grid(group_kernel_size)
 
@@ -63,7 +80,29 @@ class GSeparableKernelSE2(GSeparableKernel):
         mask: bool = True,
         grid_H: Tensor | None = None,
     ) -> None:
+        """
+        Implements SE3 lifting kernel.
 
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: int denoting the spatial kernel size.
+            - group_kernel_size: int denoting the group kernel size.
+            - groups: number of groups for depth-wise separability.
+            - group_sampling_mode: str indicating the sampling mode. Supports rbf (default)
+                                   or nearest.
+            - group_sampling_width: float denoting the width of the Gaussian rbf kernels.
+                                    If 0.0 (default, recommended), width will be initialized
+                                    based on grid_H density.
+            - spatial_sampling_mode: str indicating the sampling mode. Supports bilinear (default)
+                                         or nearest.
+            - spatial_sampling_padding_mode: str indicating padding mode for sampling. Default
+                                             border.
+            - mask: bool if true, will initialize spherical mask.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if grid_H is None:
             grid_H = so2.uniform_grid(group_kernel_size)
 
@@ -98,7 +137,7 @@ class GSeparableKernelSE2(GSeparableKernel):
         )
 
 
-class GSeparableKernelSE2(GKernel):
+class GKernelSE2(GKernel):
     def __init__(
         self,
         in_channels: int,
@@ -113,7 +152,29 @@ class GSeparableKernelSE2(GKernel):
         mask: bool = True,
         grid_H: Tensor | None = None,
     ) -> None:
+        """
+        Implements SE3 lifting kernel.
 
+        Arguments:
+            - in_channels: int denoting the number of input channels.
+            - out_channels: int denoting the number of output channels.
+            - kernel_size: int denoting the spatial kernel size.
+            - group_kernel_size: int denoting the group kernel size.
+            - groups: number of groups for depth-wise separability.
+            - group_sampling_mode: str indicating the sampling mode. Supports rbf (default)
+                                   or nearest.
+            - group_sampling_width: float denoting the width of the Gaussian rbf kernels.
+                                    If 0.0 (default, recommended), width will be initialized
+                                    based on grid_H density.
+            - spatial_sampling_mode: str indicating the sampling mode. Supports bilinear (default)
+                                         or nearest.
+            - spatial_sampling_padding_mode: str indicating padding mode for sampling. Default
+                                             border.
+            - mask: bool if true, will initialize spherical mask.
+            - grid_H: tensor of reference grid used for interpolation. If not
+                      provided, a uniform grid of group_kernel_size will be
+                      generated. If provided, will overwrite given group_kernel_size.
+        """
         if grid_H is None:
             grid_H = so2.uniform_grid(group_kernel_size)
 
