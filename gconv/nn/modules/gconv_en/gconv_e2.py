@@ -27,7 +27,7 @@ class GLiftingConvE2(GLiftingConv2d):
         mask: bool = True,
     ) -> None:
         """
-        Implements E3 separable group convolution.
+        Implements E2 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -117,7 +117,7 @@ class GSeparableConvE3(GSeparableConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements E3 separable group convolution.
+        Implements E2 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -215,7 +215,7 @@ class GConvE3(GConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements E3 separable group convolution.
+        Implements E2 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
