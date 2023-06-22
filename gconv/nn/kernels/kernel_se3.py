@@ -52,7 +52,7 @@ class GLiftingKernelSE3(GLiftingKernel):
 
         grid_Rn = gF.create_grid_R3(kernel_size)
 
-        mask = gF.create_spherical_mask(kernel_size) if mask else None
+        mask = gF.create_spherical_mask_R3(kernel_size) if mask else None
 
         sample_Rn_kwargs = {
             "mode": sampling_mode,
@@ -130,7 +130,7 @@ class GSeparableKernelSE3(GSeparableKernel):
             "padding_mode": spatial_sampling_padding_mode,
         }
 
-        mask = gF.create_spherical_mask(kernel_size) if mask else None
+        mask = gF.create_spherical_mask_R3(kernel_size) if mask else None
 
         super().__init__(
             in_channels,
@@ -206,7 +206,7 @@ class GKernelSE3(GKernel):
             "padding_mode": spatial_sampling_padding_mode,
         }
 
-        mask = gF.create_spherical_mask(kernel_size) if mask else None
+        mask = gF.create_spherical_mask_R3(kernel_size) if mask else None
 
         super().__init__(
             in_channels,

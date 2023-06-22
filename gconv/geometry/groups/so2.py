@@ -222,3 +222,13 @@ def grid_sample(
         )[0]
     else:
         raise ValueError(f"Supported modes are 'rbf' or 'nearest', got {mode=}.")
+
+
+def nearest_neighbour_distance(grid: Tensor) -> Tensor:
+    """
+    Returns the nearest neighbour distance for each element in grid.
+
+    Arguments:
+        grid: tensor of shape (N, 1) of rotation angles.
+    """
+    return (geodesic_distance(grid[:, None], grid)).min(-1)

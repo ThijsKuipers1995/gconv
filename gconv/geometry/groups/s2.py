@@ -2,9 +2,9 @@ from typing import Optional
 import torch
 from torch import Tensor
 
-from gconv3d.geometry import so3
+from gconv.geometry import so3
 
-from gconv3d.geometry import repulsion
+from gconv.geometry import repulsion
 
 from math import pi
 
