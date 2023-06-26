@@ -55,7 +55,7 @@ def random_grid(size: int | tuple, device: Optional[str] = None) -> Tensor:
         Tensor of shape size of random O3 elements.
     """
     R = so3.random_matrix(size, device=device).flatten(-2, -1)
-    coeffs = ((torch.rand(R.shape[:-2]) > 0.5) * 2) - 1
+    coeffs = ((torch.rand(size, 1) > 0.5) * 2) - 1
 
     return torch.cat((coeffs, R), dim=-1)
 

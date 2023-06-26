@@ -255,7 +255,7 @@ class GSeparableKernel(GroupKernel):
         H_product_H = self.left_apply_to_H(out_H_inverse, in_H)
         H_product_Rn = self.left_apply_to_Rn(out_H_inverse, self.grid_Rn)
 
-        product_dims = (1,) * H_product_H.ndim
+        product_dims = (1,) * (H_product_Rn.ndim - 1)
 
         # sample SO3
         weight_H = (

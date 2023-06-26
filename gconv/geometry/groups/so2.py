@@ -42,7 +42,7 @@ def angle_to_euclid(R: Tensor) -> Tensor:
     vec = R.new_empty((*R.shape[:-1], 2))
 
     vec[..., 0] = torch.cos(R).squeeze(-1)
-    vec[..., 1] = torch.cos(R).squeeze(-1)
+    vec[..., 1] = torch.sin(R).squeeze(-1)
 
     return vec
 
@@ -176,7 +176,7 @@ def geodesic_distance_euclid(R1: Tensor, R2: Tensor, eps: float = 1e-7) -> Tenso
     return torch.acos(torch.clamp((R1 * R2).sum(-1), -1 + eps, 1 - eps))
 
 
-def geodesic_distance(R1: Tensor, R2: Tensor, eps: float = 1e-7) -> Tensor:
+def geodesic_distance(R1: Tensor, R2: Tensor, eps: float = 1e-12) -> Tensor:
     """
     Calculates the geodesic distance between R1 and R2, parameterized
     as euclidean angles. Usual broadcasting rules apply.
@@ -237,4 +237,4 @@ def nearest_neighbour_distance(grid: Tensor) -> Tensor:
     Arguments:
         grid: tensor of shape (N, 1) of rotation angles.
     """
-    return (geodesic_distance(grid[:, None], grid)).min(-1)
+    return (geodesic_distance(grid[:, None], grid)).min(-1)[0]

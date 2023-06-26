@@ -37,7 +37,7 @@ def uniform_grid(size: tuple[int, int], device: str | None = None) -> Tensor:
     return torch.cat((coeffs, angles), dim=-1)
 
 
-def random_grid(size: tuple[int, int], device: str | None = None) -> Tensor:
+def random_grid(size: int, device: str | None = None) -> Tensor:
     """
     Returns a uniform grid of O2 elements where the rotations and
     reflections are both uniform SO2 grids. O2 elements are represented
@@ -52,18 +52,9 @@ def random_grid(size: tuple[int, int], device: str | None = None) -> Tensor:
     Returns:
         Tensor of shape (sum(size), 2).
     """
-    angles = torch.cat(
-        (
-            so2.random_grid(size[0], device=device),
-            so2.random_grid(size[1], device=device),
-        ),
-        dim=0,
-    )
+    angles = so2.random_grid(size, device=device)
 
-    coeffs = torch.cat(
-        (torch.ones(size[0], 1, device=device), -torch.ones(size[1], 1, device=device)),
-        dim=0,
-    )
+    coeffs = (2 * (torch.rand(size, 1) > 0.5)) - 1
 
     return torch.cat((coeffs, angles), dim=-1)
 

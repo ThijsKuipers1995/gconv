@@ -94,7 +94,7 @@ class GLiftingConvE2(GLiftingConv2d):
         return super().forward(input, H)
 
 
-class GSeparableConvE3(GSeparableConv2d):
+class GSeparableConvE2(GSeparableConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -155,7 +155,7 @@ class GSeparableConvE3(GSeparableConv2d):
             kernel_size,
             group_kernel_size,
             groups=groups,
-            group_mode=group_sampling_mode,
+            group_sampling_mode=group_sampling_mode,
             group_rotation_sampling_width=group_rotation_sampling_width,
             group_reflection_sampling_width=group_reflection_sampling_width,
             spatial_sampling_mode=spatial_sampling_mode,
@@ -181,18 +181,18 @@ class GSeparableConvE3(GSeparableConv2d):
         )
 
     def forward(
-        self, input: Tensor, H: Optional[Tensor] = None
+        self, input: Tensor, H_in: Tensor, H_out: Optional[Tensor] = None
     ) -> tuple[Tensor, Tensor]:
-        if H is None:
-            H = self.kernel.grid_H
+        if H_out is None:
+            H_out = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
+            H_out = o2.left_apply_angle(o2.random_grid(1, device=input.device), H_out)
 
-        return super().forward(input, H)
+        return super().forward(input, H_in, H_out)
 
 
-class GConvE3(GConv2d):
+class GConvE2(GConv2d):
     def __init__(
         self,
         in_channels: int,
@@ -253,7 +253,7 @@ class GConvE3(GConv2d):
             kernel_size,
             group_kernel_size,
             groups=groups,
-            group_mode=group_sampling_mode,
+            group_sampling_mode=group_sampling_mode,
             group_rotation_sampling_width=group_rotation_sampling_width,
             group_reflection_sampling_width=group_reflection_sampling_width,
             spatial_sampling_mode=spatial_sampling_mode,
@@ -279,12 +279,12 @@ class GConvE3(GConv2d):
         )
 
     def forward(
-        self, input: Tensor, H: Optional[Tensor] = None
+        self, input: Tensor, H_in: Tensor, H_out: Optional[Tensor] = None
     ) -> tuple[Tensor, Tensor]:
-        if H is None:
-            H = self.kernel.grid_H
+        if H_out is None:
+            H_out = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
+            H_out = o2.left_apply_angle(o2.random_grid(1, device=input.device), H_out)
 
-        return super().forward(input, H)
+        return super().forward(input, H_in, H_out)
