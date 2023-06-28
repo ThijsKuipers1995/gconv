@@ -1,6 +1,6 @@
 # Continuous Regular Group Convolutions
 
-This package implements a framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
+This package implements a Pytorch framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
 
 ## Getting Started
 
@@ -31,5 +31,5 @@ Furthermore, `gconv` offers all the necessary tools to build fully custom group 
 ```
 python >= 3.10
 pytorch
-numpy
+tqdm
 ```

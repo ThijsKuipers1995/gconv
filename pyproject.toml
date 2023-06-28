@@ -1,6 +1,6 @@
 [project]
 name = "gconv_TPK"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Thijs Kuipers", email="kuipersthijs@gmail.com" },
 ]
@@ -13,7 +13,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "torch"
+    "torch",
+    "tqdm",
 ]
 
 [project.urls]
