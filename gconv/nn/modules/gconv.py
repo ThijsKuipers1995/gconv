@@ -185,7 +185,7 @@ class GroupConvNd(nn.Module):
         )
 
     def extra_repr(self):
-        s = f"{self.in_channels}, {self.out_channels}, kernel_size={self.kernel_size}, {self.group_kernel_size}, stride={self.stride}"
+        s = f"{self.in_channels}, {self.out_channels}, kernel_size={self.kernel_size}, group_kernel_size={self.group_kernel_size}, stride={self.stride}"
         if self.padding != (0,) * len(self.padding):
             s += f", padding={self.padding}"
         if self.dilation != (1,) * len(self.dilation):

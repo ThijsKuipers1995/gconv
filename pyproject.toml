@@ -1,6 +1,6 @@
 [project]
 name = "gconv_TPK"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Thijs Kuipers", email="kuipersthijs@gmail.com" },
 ]
