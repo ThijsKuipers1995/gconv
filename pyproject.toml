@@ -1,0 +1,21 @@
+[project]
+name = "gconv_TPK"
+version = "0.0.1"
+authors = [
+  { name="Thijs Kuipers", email="kuipersthijs@gmail.com" },
+]
+description = "Pytorch extension for continuous regular group convolutions"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "torch"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ThijsKuipers1995/gconv"
+"Bug Tracker" = "https://github.com/ThijsKuipers1995/gconv/issues"
