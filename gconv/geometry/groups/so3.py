@@ -652,19 +652,21 @@ def geodesic_distance(
     return torch.acos(torch.clamp((qx * qy).sum(-1).abs(), -1 + eps, 1 - eps))
 
 
-def nearest_neighbour_distance(q: Tensor, keepdim: bool = False) -> Tensor:
+def nearest_neighbour_distance(q: Tensor) -> Tensor:
     """
     Calculates the nearest neighbour distance between all elements
-    in given grid of rotations `q` parameterized as quaternions.
+    in given grid of rotations `q` parameterized as quaternions or
+    matrices.
 
     Arguments:
-        - q: Tensor of shape (N, 4).
-        - keepdims: If True, result will be of shape (N, 1), else
-                    (N,). Default value is False.
+        - q: Tensor of shape (N, 4) or (N, 3, 3).
 
     Returns:
         - Tensor of shape (N,) or (N, 1) if `keepdims = True`.
     """
+    if q.ndim == 3:
+        q = matrix_to_quat(q)
+
     return geodesic_distance(q[:, None], q).sort()[0][:, 1]
 
 
