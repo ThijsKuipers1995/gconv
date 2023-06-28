@@ -29,6 +29,7 @@ def load_grid(size: str, grid_type: str, parameterization: str) -> Tensor:
 _grid_cache: dict[str, dict[str, dict[int, Tensor]]] = {
     "so3": {
         "quat": {
+            1: Tensor([[1.0, 0.0, 0.0, 0.0]]),
             2: Tensor(
                 [
                     [8.5713e-01, -1.1169e-02, -8.0601e-03, -5.1492e-01],
@@ -422,6 +423,7 @@ _grid_cache: dict[str, dict[str, dict[int, Tensor]]] = {
             ),
         },
         "matrix": {
+            1: Tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
             2: Tensor(
                 [
                     [
