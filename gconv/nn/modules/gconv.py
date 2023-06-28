@@ -184,6 +184,20 @@ class GroupConvNd(nn.Module):
             input, weight, None, self.stride, self.padding, self.dilation, groups
         )
 
+    def extra_repr(self):
+        s = f"{self.in_channels}, {self.out_channels}, kernel_size={self.kernel_size}, {self.group_kernel_size}, stride={self.stride}"
+        if self.padding != (0,) * len(self.padding):
+            s += f", padding={self.padding}"
+        if self.dilation != (1,) * len(self.dilation):
+            s += f", dilation={self.dilation}"
+        if self.groups != 1:
+            s += f", groups={self.groups}"
+        if self.bias is None:
+            s += ", bias=False"
+        if self.padding_mode != "zeros":
+            s += f", padding_mode={self.padding_mode}"
+        return s
+
 
 class GLiftingConvNd(GroupConvNd):
     def __init__(

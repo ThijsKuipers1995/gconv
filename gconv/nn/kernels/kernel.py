@@ -113,6 +113,14 @@ class GroupKernel(nn.Module):
         self.sample_H_kwargs = sample_H_kwargs
         self.sample_Rn_kwargs = sample_Rn_kwargs
 
+    def extra_repr(self):
+        s = f"mask={self.mask is not None}"
+        if self.sample_H_kwargs:
+            s += f", sample_H_kwargs={self.sample_H_kwargs}"
+        if self.sample_Rn_kwargs:
+            s += f", sample_Rn_kwargs={self.sample_Rn_kwargs}"
+        return s
+
 
 class GLiftingKernel(GroupKernel):
     def __init__(
