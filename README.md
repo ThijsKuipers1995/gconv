@@ -30,6 +30,6 @@ Furthermore, `gconv` offers all the necessary tools to build fully custom group 
 ## Requirements:
 ```
 python >= 3.10
-pytorch
+torch
 tqdm
 ```
