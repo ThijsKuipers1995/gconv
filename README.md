@@ -1,4 +1,4 @@
-# Continuous Regular Group Convolutions
+# Continuous Regular Group Convolutions (WIP 👷‍♀️👷‍♂️)
 
 This package implements a Pytorch framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
 
@@ -32,4 +32,17 @@ Furthermore, `gconv` offers all the necessary tools to build fully custom group 
 python >= 3.10
 torch
 tqdm
+```
+
+## Reference:
+Paper accepted at MICCAI 2023.
+```
+@misc{kuipers2023regular,
+      title={Regular SE(3) Group Convolutions for Volumetric Medical Image Analysis}, 
+      author={Thijs P. Kuipers and Erik J. Bekkers},
+      year={2023},
+      eprint={2306.13960},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
 ```
