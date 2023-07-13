@@ -1,6 +1,6 @@
 # Continuous Regular Group Convolutions (WIP 👷‍♀️👷‍♂️)
 
-This package implements a Pytorch framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input.
+This package implements a Pytorch framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input. The method is explained in the paper [Regular SE(3) Group Convolutions for Volumetric Medical Image Analysis](https://arxiv.org/abs/2306.13960), accepted at MICCAI 2023 (see reference below).
 
 ## Getting Started
 
