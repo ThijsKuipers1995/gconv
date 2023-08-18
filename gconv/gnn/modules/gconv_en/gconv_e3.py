@@ -1,13 +1,13 @@
 from typing import Optional
-from gconv.nn.kernels import GLiftingKernelE2, GSeparableKernelE2, GKernelE2
-from gconv.nn.modules.gconv import GLiftingConv2d, GSeparableConv2d, GConv2d
+from gconv.gnn.kernels import GLiftingKernelE3, GSeparableKernelE3, GKernelE3
+from gconv.gnn.modules.gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
 
-from gconv.geometry import o2
+from gconv.geometry import o3
 
 from torch import Tensor
 
 
-class GLiftingConvE2(GLiftingConv2d):
+class GLiftingConvE3(GLiftingConv3d):
     def __init__(
         self,
         in_channels: int,
@@ -27,7 +27,7 @@ class GLiftingConvE2(GLiftingConv2d):
         mask: bool = True,
     ) -> None:
         """
-        Implements E2 separable group convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -54,7 +54,7 @@ class GLiftingConvE2(GLiftingConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GLiftingKernelE2(
+        kernel = GLiftingKernelE3(
             in_channels,
             out_channels,
             kernel_size,
@@ -89,18 +89,18 @@ class GLiftingConvE2(GLiftingConv2d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = o2.left_apply_angle(o2.random_grid(1, device=input.device), H)
+            H = o3.left_apply_O3(o3.random_grid(1, device=input.device), H)
 
         return super().forward(input, H)
 
 
-class GSeparableConvE2(GSeparableConv2d):
+class GSeparableConvE3(GSeparableConv3d):
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         kernel_size: int,
-        group_kernel_size: int,
+        group_kernel_size: tuple,
         groups: int = 1,
         stride: int = 1,
         padding: int | str = 0,
@@ -117,7 +117,7 @@ class GSeparableConvE2(GSeparableConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements E2 separable group convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -149,7 +149,7 @@ class GSeparableConvE2(GSeparableConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GSeparableKernelE2(
+        kernel = GSeparableKernelE3(
             in_channels,
             out_channels,
             kernel_size,
@@ -187,12 +187,12 @@ class GSeparableConvE2(GSeparableConv2d):
             H_out = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H_out = o2.left_apply_angle(o2.random_grid(1, device=input.device), H_out)
+            H_out = o3.left_apply_O3(o3.random_grid(1, device=input.device), H_out)
 
         return super().forward(input, H_in, H_out)
 
 
-class GConvE2(GConv2d):
+class GConvE3(GConv3d):
     def __init__(
         self,
         in_channels: int,
@@ -215,7 +215,7 @@ class GConvE2(GConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements E2 separable group convolution.
+        Implements E3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -247,7 +247,7 @@ class GConvE2(GConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GKernelE2(
+        kernel = GKernelE3(
             in_channels,
             out_channels,
             kernel_size,
@@ -285,6 +285,6 @@ class GConvE2(GConv2d):
             H_out = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H_out = o2.left_apply_angle(o2.random_grid(1, device=input.device), H_out)
+            H_out = o3.left_apply_O3(o3.random_grid(1, device=input.device), H_out)
 
         return super().forward(input, H_in, H_out)

@@ -1,7 +1,7 @@
-from gconv.nn.kernels import GLiftingKernel, GSeparableKernel, GKernel
+from gconv.gnn.kernels import GLiftingKernel, GSeparableKernel, GKernel
 from gconv.geometry import so2
 
-import gconv.nn.functional as gF
+import gconv.gnn.functional as gF
 
 from torch import Tensor
 

@@ -1,13 +1,13 @@
 from typing import Optional
 from torch import Tensor
 
-from gconv.nn.modules.gconv import GLiftingConv2d, GSeparableConv2d, GConv2d
-from gconv.nn.kernels import GLiftingKernelSE2, GSeparableKernelSE2, GKernelSE2
+from gconv.gnn.modules.gconv import GLiftingConv3d, GSeparableConv3d, GConv3d
+from gconv.gnn.kernels import GLiftingKernelSE3, GSeparableKernelSE3, GKernelSE3
 
-from gconv.geometry import so2
+from gconv.geometry import so3
 
 
-class GLiftingConvSE2(GLiftingConv2d):
+class GLiftingConvSE3(GLiftingConv3d):
     def __init__(
         self,
         in_channels: int,
@@ -27,7 +27,7 @@ class GLiftingConvSE2(GLiftingConv2d):
         mask: bool = True,
     ) -> None:
         """
-        Implements SE2 lifting convolution.
+        Implements SE3 lifting convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -38,7 +38,7 @@ class GLiftingConvSE2(GLiftingConv2d):
             - padding: int or denoting padding.
             - dilation: int denoting dilation.
             - group_kernel_size: int denoting the group kernel size (default 4).
-            - grid_H: tensor of shape (N, 3, 3) of so2 elements (rotation matrices). If
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
                       not provided, a uniform grid will be initalizd of size group_kernel_size.
                       If provided, group_kernel_size will be set to N.
             - padding_mode: str denoting the padding mode.
@@ -49,7 +49,7 @@ class GLiftingConvSE2(GLiftingConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GLiftingKernelSE2(
+        kernel = GLiftingKernelSE3(
             in_channels,
             out_channels,
             kernel_size,
@@ -84,12 +84,12 @@ class GLiftingConvSE2(GLiftingConv2d):
             H = self.kernel.grid_H
 
         if self.permute_output_grid:
-            H = so2.left_apply_angle(so2.random_grid(1, device=input.device), H)
+            H = so3.left_apply_matrix(so3.random_matrix(1, device=input.device), H)
 
         return super().forward(input, H)
 
 
-class GSeparableConvSE2(GSeparableConv2d):
+class GSeparableConvSE3(GSeparableConv3d):
     def __init__(
         self,
         in_channels: int,
@@ -111,7 +111,7 @@ class GSeparableConvSE2(GSeparableConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE2 separable group convolution.
+        Implements SE3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -122,7 +122,7 @@ class GSeparableConvSE2(GSeparableConv2d):
             - padding: int or denoting padding.
             - dilation: int denoting dilation.
             - group_kernel_size: int denoting the group kernel size (default 4).
-            - grid_H: tensor of shape (N, 3, 3) of so2 elements (rotation matrices). If
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
                       not provided, a uniform grid will be initalizd of size group_kernel_size.
                       If provided, group_kernel_size will be set to N.
             - padding_mode: str denoting the padding mode.
@@ -140,7 +140,7 @@ class GSeparableConvSE2(GSeparableConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GSeparableKernelSE2(
+        kernel = GSeparableKernelSE3(
             in_channels,
             out_channels,
             kernel_size,
@@ -177,12 +177,14 @@ class GSeparableConvSE2(GSeparableConv2d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = so2.left_apply_angle(so2.random_grid(1, device=input.device), out_H)
+            out_H = so3.left_apply_matrix(
+                so3.random_matrix(1, device=input.device), out_H
+            )
 
         return super().forward(input, in_H, out_H)
 
 
-class GConvSE2(GConv2d):
+class GConvSE3(GConv3d):
     def __init__(
         self,
         in_channels: int,
@@ -204,7 +206,7 @@ class GConvSE2(GConv2d):
         grid_H: Optional[Tensor] = None,
     ) -> None:
         """
-        Implements SE2 separable group convolution.
+        Implements SE3 separable group convolution.
 
         Arguments:
             - int_channels: int denoting the number of input channels.
@@ -215,7 +217,7 @@ class GConvSE2(GConv2d):
             - padding: int or denoting padding.
             - dilation: int denoting dilation.
             - group_kernel_size: int denoting the group kernel size (default 4).
-            - grid_H: tensor of shape (N, 3, 3) of so2 elements (rotation matrices). If
+            - grid_H: tensor of shape (N, 3, 3) of SO3 elements (rotation matrices). If
                       not provided, a uniform grid will be initalizd of size group_kernel_size.
                       If provided, group_kernel_size will be set to N.
             - padding_mode: str denoting the padding mode.
@@ -233,7 +235,7 @@ class GConvSE2(GConv2d):
             - bias: bool that if true, will initialzie bias parameters.
             - mask: bool that if true, will initialize spherical mask applied to spatial weights.
         """
-        kernel = GKernelSE2(
+        kernel = GKernelSE3(
             in_channels,
             out_channels,
             kernel_size=kernel_size,
@@ -270,6 +272,8 @@ class GConvSE2(GConv2d):
             out_H = in_H
 
         if self.permute_output_grid:
-            out_H = so2.left_apply_angle(so2.random_grid(1, device=input.device), out_H)
+            out_H = so3.left_apply_matrix(
+                so3.random_matrix(1, device=input.device), out_H
+            )
 
         return super().forward(input, in_H, out_H)

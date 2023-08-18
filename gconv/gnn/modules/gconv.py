@@ -5,7 +5,7 @@ Implements group convolution base models.
 """
 from __future__ import annotations
 
-from gconv.nn.kernels import (
+from gconv.gnn.kernels import (
     GroupKernel,
     GLiftingKernel,
     GSeparableKernel,
@@ -53,10 +53,8 @@ class GroupConvNd(nn.Module):
         bias: bool = False,
     ) -> None:
         super().__init__()
-        if (
-            isinstance(group_kernel_size, tuple)
-            and any(i < 0 for i in group_kernel_size)
-            or sum(group_kernel_size) <= 0
+        if isinstance(group_kernel_size, tuple) and (
+            any(i < 0 for i in group_kernel_size) or sum(group_kernel_size) <= 0
         ):
             raise ValueError("group_kernel_size must contain positive integers")
         if groups <= 0:

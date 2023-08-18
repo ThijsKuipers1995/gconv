@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from gconv.nn.kernels import GSubgroupKernel
+from gconv.gnn.kernels import GSubgroupKernel
 
 from torch import Tensor
 

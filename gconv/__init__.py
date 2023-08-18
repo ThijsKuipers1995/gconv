@@ -1,1 +1,1 @@
-from .nn.modules import *
+from .gnn.modules import *

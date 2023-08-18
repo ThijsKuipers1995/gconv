@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from gconv.nn.kernels import GLiftingKernel, GSeparableKernel, GKernel
+from gconv.gnn.kernels import GLiftingKernel, GSeparableKernel, GKernel
 
 from torch import Tensor
 
 from gconv.geometry import o3, so3
-from gconv.nn import functional as gF
+from gconv.gnn import functional as gF
 
 
 class GLiftingKernelE3(GLiftingKernel):
