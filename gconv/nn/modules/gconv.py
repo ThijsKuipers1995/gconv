@@ -53,7 +53,11 @@ class GroupConvNd(nn.Module):
         bias: bool = False,
     ) -> None:
         super().__init__()
-        if any(i < 0 for i in group_kernel_size) or sum(group_kernel_size) <= 0:
+        if (
+            isinstance(group_kernel_size, tuple)
+            and any(i < 0 for i in group_kernel_size)
+            or sum(group_kernel_size) <= 0
+        ):
             raise ValueError("group_kernel_size must contain positive integers")
         if groups <= 0:
             raise ValueError("groups must be a positive integer")
