@@ -2,13 +2,21 @@
 
 This package implements a Pytorch framework for group convolutions that are easy to use and implement in existing Pytorch modules. The package offers premade modules for E3 and SE3 convolutions, as well as basic operations such as pooling and normalization for $\mathbb{R}^n \rtimes H$ input. The method is explained in the paper [Regular SE(3) Group Convolutions for Volumetric Medical Image Analysis](https://arxiv.org/abs/2306.13960), accepted at MICCAI 2023 (see reference below).
 
+## Installation from Source
+
+Download `gconv` and save to a directory. Then from that directory run the following command:
+
+```
+pip install -e gconv
+```
+
 ## Getting Started
 
 The `gconv` modules are as straightforward to use as any regular Pytorch convolution module. The only difference is the output consisting of both the feature maps, as well as the group elements on which they are defined. See the example below:
 
 ```python3
 import torch                                                                        # 1
-import gconv.nn as gnn                                                              # 2
+import gconv.gnn as gnn                                                             # 2
                                                                                     # 3
 x1 = torch.randn(16, 3, 28, 28, 28)                                                 # 4
                                                                                     # 5
