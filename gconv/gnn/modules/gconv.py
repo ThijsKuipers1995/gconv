@@ -1,7 +1,7 @@
 """
 gconv.py
 
-Implements group convolution base models.
+Implements group convolution base modules.
 """
 from __future__ import annotations
 
