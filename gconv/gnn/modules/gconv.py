@@ -5,6 +5,8 @@ Implements group convolution base modules.
 """
 from __future__ import annotations
 
+from matplotlib import pyplot as plt
+
 from gconv.gnn.kernels import (
     GroupKernel,
     GLiftingKernel,

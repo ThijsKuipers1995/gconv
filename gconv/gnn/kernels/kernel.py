@@ -181,7 +181,7 @@ class GLiftingKernel(GroupKernel):
         weight = self.sample_Rn(
             self.weight.repeat_interleave(H.shape[0], dim=0),
             H_product.repeat(self.out_channels, *product_dims),
-            **self.sample_H_kwargs,
+            **self.sample_Rn_kwargs,
         ).view(
             self.out_channels, num_H, self.in_channels // self.groups, *self.kernel_size
         )

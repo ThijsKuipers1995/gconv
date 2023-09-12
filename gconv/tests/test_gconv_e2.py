@@ -4,7 +4,7 @@ sys.path.append("..")
 
 import torch
 
-from gconv.nn import GLiftingConvE2, GSeparableConvE2, GConvE2
+from gconv.gnn import GLiftingConvE2, GSeparableConvE2, GConvE2
 from gconv.geometry.groups import o2
 
 
